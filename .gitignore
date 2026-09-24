@@ -1,0 +1,10 @@
+node_modules/
+tmp/
+.claude/
+__pycache__/
+.venv/
+venv/
+data/
+*.log
+.env
+.env.*

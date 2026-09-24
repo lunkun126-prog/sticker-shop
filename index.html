@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ff8fc1">
+<title>贴纸美容小铺</title>
+<style>
+:root{
+  --pink:#ff7eb6; --pink2:#ffc4de; --pink3:#fff0f7; --aqua:#6fd3f0; --aqua2:#c9f1ff;
+  --yellow:#ffe066; --ink:#5a3a4a; --ink2:#8a6878; --ok:#3cc87a; --bad:#ff6b6b;
+  --shadow:0 4px 0 rgba(170,70,120,.25); --bg:#ffe3f0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;touch-action:manipulation}
+#app{position:relative;max-width:480px;height:100dvh;margin:0 auto;overflow:hidden;background:linear-gradient(180deg,#ffd6ea 0%,#e6f7ff 100%)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;border:none;cursor:pointer;color:var(--ink)}
+.btn{background:var(--pink);color:#fff;font-size:20px;font-weight:800;padding:12px 22px;border-radius:999px;box-shadow:0 5px 0 #d4508e;letter-spacing:1px;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #d4508e}
+.btn.aqua{background:#34b8e0;box-shadow:0 5px 0 #1f8db0}
+.btn.yellow{background:#ffc93c;color:#6a4200;box-shadow:0 5px 0 #d99a10}
+.btn.gray{background:#cbbac3;box-shadow:0 5px 0 #a8949e}
+.btn.green{background:var(--ok);box-shadow:0 5px 0 #25985a}
+.btn[disabled]{filter:grayscale(.8);opacity:.55;cursor:default}
+.topbar{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px;z-index:5}
+.pill{background:#fff;border-radius:999px;padding:4px 10px 4px 4px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:4px;box-shadow:var(--shadow)}
+.pill img{width:26px;height:26px}
+.pill .ico{width:26px;height:26px;display:grid;place-items:center;font-size:18px}
+.spacer{flex:1}
+.iconbtn{width:40px;height:40px;border-radius:50%;background:#fff;font-size:20px;box-shadow:var(--shadow)}
+ruby{ruby-position:over}
+rt{font-size:.55em;color:var(--ink2);font-weight:600;letter-spacing:0}
+.rw{white-space:nowrap;display:inline-block}
+.kw{display:inline-flex;align-items:flex-end;gap:2px;background:var(--yellow);border-radius:10px;padding:0 4px;margin:0 2px;cursor:pointer}
+.kw .chip{width:16px;height:16px;border-radius:50%;border:2px solid #fff;margin-bottom:6px;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.kw img{width:26px;height:26px;object-fit:contain;margin-bottom:3px}
+.en{font-family:"Comic Sans MS","Chalkboard SE","Segoe Print",sans-serif;color:#1f8db0;font-weight:700}
+/* 店铺 */
+#shop .scene{position:relative;flex:1;overflow:hidden}
+#shop .scene .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.decor{position:absolute;pointer-events:none;filter:drop-shadow(0 4px 3px rgba(0,0,0,.15));animation:pop .4s}
+/* 顾客站在地板上：脚底贴着地面，走进来后原地轻轻摇摆，不再上下飘 */
+.door{position:absolute;left:50%;bottom:3%;width:40%;cursor:pointer;transform:translateX(-50%);animation:walkin 1.2s ease-out both}
+.door img.who{width:100%;display:block;position:relative;z-index:1;transform-origin:50% 100%;animation:sway 2.4s ease-in-out 1.2s infinite}
+.door .shadow{position:absolute;left:18%;right:18%;bottom:-1%;height:5%;border-radius:50%;background:radial-gradient(ellipse,rgba(90,40,60,.35),transparent 70%)}
+.door .bang{position:absolute;right:-6px;top:4%;z-index:2;background:#fff;border-radius:16px;padding:4px 10px;font-weight:900;font-size:22px;color:var(--pink);box-shadow:var(--shadow);animation:pulse 1s infinite}
+.shopname{position:absolute;left:50%;top:1.5%;transform:translateX(-50%);background:#fff;border:4px solid var(--pink);border-radius:18px;padding:4px 16px;font-weight:900;font-size:22px;white-space:nowrap;box-shadow:var(--shadow)}
+.shopname small{display:block;text-align:center;font-size:12px;color:var(--ink2)}
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 8px calc(env(safe-area-inset-bottom) + 8px);background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -3px 10px rgba(200,80,140,.15);z-index:5}
+.nav button{background:var(--pink3);border-radius:16px;padding:6px 0;font-size:13px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:1px}
+.nav button b{font-size:26px;line-height:1.1}
+.nav button.main{background:var(--pink);color:#fff}
+.daybar{margin:0 10px 4px;background:#fff;border-radius:14px;padding:6px 10px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+.dots{display:flex;gap:4px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--pink2);display:block}
+.dots i.done{background:var(--pink)}
+/* 工作台 */
+#work{background:linear-gradient(180deg,#ffe0ef,#dff4ff)}
+.stations{display:flex;gap:4px;margin:0 10px 6px;flex-wrap:wrap}
+.stn{flex:1;min-width:0;background:#fff;border-radius:12px;padding:4px 2px;font-size:12px;font-weight:800;text-align:center;opacity:.55;border:2px solid transparent}
+.stn b{display:block;font-size:20px}
+.stn.cur{opacity:1;border-color:var(--pink);box-shadow:var(--shadow)}
+.stn.done{opacity:1;background:#e6fff0}
+.stn.done::after{content:" ✓";color:var(--ok)}
+.orderbar{margin:0 10px;background:#fff;border-radius:18px;padding:6px 10px;box-shadow:var(--shadow);display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:44px}
+.req{display:flex;align-items:center;gap:3px;background:var(--pink3);border-radius:12px;padding:3px 7px;font-size:14px;font-weight:800;border:2px solid transparent}
+.req img{width:26px;height:26px;object-fit:contain}
+.req .chip{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.req.ok{border-color:var(--ok);background:#e6fff0}
+.req.ok::after{content:"✓";color:var(--ok);font-weight:900;margin-left:2px}
+.stagewrap{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0;padding:4px 0;position:relative}
+.stage{position:relative;touch-action:none;flex:none;border-radius:28px;border:5px solid #fff;box-shadow:0 6px 0 rgba(200,80,140,.25);overflow:hidden;
+  background:linear-gradient(180deg,#fff6fb 0%,#fff 55%,#ffd6ea 82%,#f7b8d4 100%) center/cover no-repeat}
+.stage .floor{position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(230,150,190,.35))}
+.stage .foot{position:absolute;left:25%;right:25%;bottom:2.2%;height:4%;border-radius:50%;background:radial-gradient(ellipse,rgba(90,40,60,.3),transparent 70%)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.layer{position:absolute;inset:0}
+.stk{position:absolute;transform-origin:50% 50%;touch-action:none}
+.stk img{width:100%;display:block;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
+.stk.sel{outline:3px dashed var(--pink);outline-offset:3px;border-radius:8px}
+.cursor{position:absolute;width:22%;transform:translate(-30%,-70%) rotate(-15deg);pointer-events:none;display:none;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25));z-index:4}
+.hint{position:absolute;left:50%;top:6px;transform:translateX(-50%);background:rgba(255,255,255,.95);border-radius:14px;padding:4px 12px;font-weight:800;font-size:16px;box-shadow:var(--shadow);white-space:nowrap;z-index:5}
+.tray{background:#fff;border-radius:22px 22px 0 0;padding:8px 8px calc(env(safe-area-inset-bottom) + 8px);box-shadow:0 -3px 10px rgba(200,80,140,.15)}
+.tabs{display:flex;gap:6px;margin-bottom:6px}
+.tabs button{flex:1;background:var(--pink3);border-radius:12px;padding:6px 0;font-weight:800;font-size:15px}
+.tabs button.on{background:var(--pink);color:#fff}
+.items{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none;flex-wrap:wrap}
+.items::-webkit-scrollbar{display:none}
+.item{flex:0 0 auto;width:78px;background:var(--pink3);border-radius:16px;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;border:3px solid transparent;font-size:13px;font-weight:800;line-height:1.1;text-align:center;position:relative}
+.item img{width:54px;height:54px;object-fit:contain}
+.item.on{border-color:var(--pink);background:#ffe0ef}
+.item.wrong{animation:shake .4s}
+.item .en{font-size:12px}
+.item .cnt{position:absolute;right:4px;top:3px;background:var(--pink);color:#fff;border-radius:999px;font-size:11px;padding:0 5px}
+.item.big{width:104px}
+.item.big img{width:92px;height:92px;object-fit:cover;object-position:50% 70%;border-radius:12px;background:#fff}
+.item.shoe img{object-position:50% 96%}
+.progress{height:10px;border-radius:999px;background:var(--pink3);overflow:hidden;margin:4px 0}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#7fe0a8,var(--ok));width:0;transition:width .2s}
+.partrow{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;margin:2px 0}
+.partrow .progress{flex:1}
+.swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.12)}
+.sw.on{box-shadow:0 0 0 3px var(--ink)}
+.row{display:flex;gap:8px;align-items:center;justify-content:center}
+.small{font-size:13px;color:var(--ink2)}
+.selbar{display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:6px;flex-wrap:wrap}
+.selbar button{background:var(--aqua2);border-radius:12px;padding:6px 12px;font-size:18px;font-weight:800}
+.nextbar{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+/* 弹窗 */
+.modal{position:absolute;inset:0;background:rgba(90,40,70,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal.on{display:flex}
+.panel{background:#fff;border-radius:26px;padding:18px 16px;width:100%;max-height:92%;overflow:auto;box-shadow:0 8px 0 rgba(200,80,140,.35);text-align:center;animation:pop .3s}
+.panel h2{margin:0 0 8px;font-size:24px}
+.bubble{background:#fff;border:3px solid var(--pink2);border-radius:22px;padding:10px 14px;font-size:21px;font-weight:800;line-height:2.1;position:relative;text-align:left}
+.bubble .en{display:block;font-size:16px;line-height:1.4;margin-top:4px}
+.face{width:46%;margin:10px auto 0;display:block}
+.stars{font-size:40px;letter-spacing:4px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.opts button{background:var(--aqua2);border-radius:18px;padding:14px 0;font-size:32px;font-weight:900;box-shadow:0 4px 0 #8fcfe6}
+.opts button.no{background:#eee;color:#bbb;box-shadow:none}
+.opts button.yes{background:#b8f5cf;box-shadow:0 4px 0 #6fd39a}
+.bill{background:var(--pink3);border-radius:16px;padding:8px 12px;margin:8px 0;font-size:18px;font-weight:800;text-align:left}
+.bill div{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.bill img{width:30px;height:30px;object-fit:contain}
+.coins{display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end;max-width:150px}
+.coins img{width:18px;height:18px}
+.tenframe{display:inline-grid;grid-template-columns:repeat(5,18px);gap:3px;background:#fff;padding:4px;border-radius:8px;border:2px solid var(--pink2);margin:2px}
+.tenframe i{width:18px;height:18px;border-radius:50%;border:2px dashed #eed}
+.tenframe i.a{background:var(--pink);border:none}
+.tenframe i.b{background:#34b8e0;border:none}
+.tenframe i.x{background:#ddd;border:none;position:relative}
+.tenframe i.x:after{content:"✕";position:absolute;inset:0;font-size:13px;line-height:18px;color:#999}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}
+.card{background:#fff;border-radius:18px;padding:8px 4px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;font-weight:800;font-size:14px;gap:2px;position:relative}
+.card img{width:60px;height:60px;object-fit:contain}
+.card .emo{font-size:44px;line-height:60px;height:60px}
+.card .price{background:var(--yellow);border-radius:999px;padding:1px 8px;display:flex;align-items:center;gap:2px}
+.card .price img{width:18px;height:18px}
+.card.owned{opacity:.55}
+.card .big{font-size:40px;line-height:60px;font-weight:900}
+.card.miss img{filter:brightness(0) opacity(.18)}
+.card .rar{position:absolute;left:6px;top:6px;font-size:11px;border-radius:999px;padding:0 6px;color:#fff}
+.rar.r1{background:#b9a6b2}.rar.r2{background:#5aa9ff}.rar.r3{background:linear-gradient(90deg,#ffb300,#ff5fa2)}
+.card.shiny{box-shadow:0 0 0 3px #ffd54a,0 4px 0 rgba(170,70,120,.25);animation:glow 1.6s infinite}
+.list{flex:1;overflow:auto}
+.head{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 10px 4px}
+.head h1{margin:0;font-size:22px;flex:1}
+.photo{position:relative;aspect-ratio:7/9;background:linear-gradient(180deg,#fff,#ffd6ea) center/cover;border-radius:14px;overflow:hidden;border:3px solid #fff;box-shadow:var(--shadow)}
+.photo img.l{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.photo .stk{pointer-events:none}
+.toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:#fff;border-radius:20px;padding:12px 20px;font-size:22px;font-weight:900;box-shadow:0 6px 0 rgba(200,80,140,.3);z-index:30;pointer-events:none;animation:toast 1.4s forwards;white-space:nowrap}
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:6}
+.spark{position:absolute;font-size:22px;animation:fly 1s ease-out forwards}
+.flash{position:absolute;inset:0;background:#fff;z-index:7;animation:flash .5s forwards;pointer-events:none}
+#title{align-items:center;justify-content:center;gap:16px;text-align:center;background:linear-gradient(180deg,#ffc4de,#c9f1ff)}
+#title h1{font-size:40px;margin:0;color:#fff;-webkit-text-stroke:2px var(--pink);text-shadow:0 5px 0 var(--pink)}
+#title .sub{font-weight:800;color:var(--ink2)}
+#title .hero{display:flex;justify-content:center;height:36dvh}
+#title .hero img{height:100%;margin:0 -24px}
+/* 盲袋 */
+.bagbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px}
+.bagbox .bagimg{width:180px;cursor:pointer;filter:drop-shadow(0 8px 6px rgba(200,80,140,.3))}
+.bagbox .bagimg.shake{animation:bagshake .6s 2}
+.reveal{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.reveal .card{width:120px;animation:pop .5s both}
+/* 贴纸小铺 */
+#stall .top{position:relative;height:36%;flex:none;overflow:hidden}
+#stall .top .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+#stall .buyer{position:absolute;left:4%;bottom:0;height:92%;animation:walkin 1s ease-out both}
+#stall .say{position:absolute;right:4%;top:10%;width:56%;background:#fff;border-radius:18px;padding:8px 12px;font-weight:800;font-size:18px;line-height:2;box-shadow:var(--shadow)}
+.basket{min-height:62px;background:#fff8e1;border:3px dashed #ffc93c;border-radius:16px;margin:8px;display:flex;gap:6px;align-items:center;padding:6px;flex-wrap:wrap}
+.basket img{width:48px;height:48px;object-fit:contain;animation:pop .3s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes walkin{0%{transform:translateX(90%);opacity:0}60%{opacity:1}100%{transform:translateX(-50%)}}
+#stall .buyer{animation-name:walkin2}
+@keyframes walkin2{0%{transform:translateX(-80%);opacity:0}100%{transform:none;opacity:1}}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes bagshake{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%)}}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(40deg)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 #fff)}50%{filter:drop-shadow(0 0 14px #fff6a0)}}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+.glow{animation:glow 1s 2}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;animation-iteration-count:1!important} }
+/* ============ 电脑横屏：舞台占满高度，操作区在右侧 ============ */
+@media (min-aspect-ratio: 5/4) and (min-width: 900px){
+  #app{max-width:none;background:linear-gradient(135deg,#ffd6ea 0%,#fff0f7 45%,#dff4ff 100%)}
+  #title .hero{height:calc(var(--apph,100dvh) * .46)}
+  #title h1{font-size:64px}
+  #title .sub{font-size:22px}
+  #shop.on{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto 1fr;column-gap:24px;padding:16px 24px}
+  #shop .topbar{grid-column:1;grid-row:1;padding:0;flex-wrap:wrap}
+  #shop .daybar{grid-column:1;grid-row:2;margin:12px 0 0;font-size:18px;flex-wrap:wrap}
+  #shop .scene{grid-column:2;grid-row:1/4;height:100%;aspect-ratio:720/1260;flex:none;border-radius:28px;border:6px solid #fff;box-shadow:0 8px 0 rgba(200,80,140,.25)}
+  #shop .nav{grid-column:3;grid-row:1/4;align-self:center;grid-template-columns:1fr 1fr;gap:12px;background:none;box-shadow:none;padding:0;max-width:300px}
+  #shop .nav button{font-size:18px;padding:12px 0;border-radius:22px;box-shadow:var(--shadow);background:#fff}
+  #shop .nav button.main{background:var(--pink);grid-column:1/3}
+  #shop .nav button b{font-size:36px}
+  .pill{font-size:22px}.pill img,.pill .ico{width:34px;height:34px}
+  .iconbtn{width:52px;height:52px;font-size:26px}
+  #work.on{display:grid;grid-template-columns:1fr minmax(440px,36%);grid-template-rows:auto auto auto 1fr;column-gap:18px;padding:12px 18px 12px 12px}
+  #work .topbar{grid-column:2;grid-row:1;padding:0 0 8px}
+  #work .stations{grid-column:2;grid-row:2;margin:0 0 8px}
+  #work .stn{font-size:14px}
+  #work .orderbar{grid-column:2;grid-row:3;margin:0 0 10px;font-size:18px}
+  #work .req{font-size:16px;padding:5px 9px}
+  #work .req img{width:32px;height:32px}
+  #work .stagewrap{grid-column:1;grid-row:1/5;padding:0}
+  #work .tray{grid-column:2;grid-row:4;border-radius:22px;padding:12px;overflow:auto;align-self:stretch;box-shadow:var(--shadow)}
+  #work .item{width:104px;font-size:15px}
+  #work .item img{width:70px;height:70px}
+  #work .item.big{width:124px}
+  #work .item.big img{width:110px;height:110px}
+  #work .tabs button{font-size:17px;padding:9px 0}
+  #work .selbar button{font-size:22px;padding:8px 16px}
+  #work .sw{width:46px;height:46px}
+  .hint{font-size:20px}
+  #store .list,#album .list,#learn .list,#bag .list{width:100%;max-width:1200px;margin:0 auto}
+  #store .tabs,#learn .tabs,#bag .tabs{width:100%;max-width:1200px;margin:0 auto}
+  .head{width:100%;max-width:1200px;margin:0 auto}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+  .card{font-size:16px}.card img{width:90px;height:90px}.card .emo{font-size:64px;line-height:90px;height:90px}
+  .card .big{font-size:56px;line-height:80px}
+  .panel{max-width:680px}
+  #stall.on{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}
+  #stall .head{grid-column:1/3}
+  #stall .top{height:auto;grid-column:1;grid-row:2;margin:0 12px 12px;border-radius:24px}
+  #stall .side{grid-column:2;grid-row:2;overflow:auto;padding-right:12px}
+  #fsBtn{display:block}
+}
+#fsBtn{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section class="screen on" id="title">
+  <h1>贴纸美容小铺</h1>
+  <div class="sub">爆改大变身 · 开店经营 · 盲袋贴纸 · 学拼音、英语和数学</div>
+  <div class="hero" id="titleHero"></div>
+  <button class="btn" id="startBtn">开 店 啦！</button>
+  <div class="small">记得打开声音哦 🔊</div>
+</section>
+
+<section class="screen" id="shop">
+  <div class="topbar">
+    <div class="pill"><img src="img/d_coin.webp" alt=""><span id="coinN">0</span></div>
+    <div class="pill"><span class="ico">⭐</span><span id="starN">0</span></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="muteBtn">🔊</button>
+    <button class="iconbtn" id="fsBtn" title="全屏">⛶</button>
+  </div>
+  <div class="daybar"><span id="dayTxt">第 1 天</span><div class="dots" id="dayDots"></div><div class="spacer"></div><span id="levelTxt"></span></div>
+  <div class="scene" id="scene">
+    <img class="bg" src="img/bg_shop.webp" alt="">
+    <div id="decorLayer"></div>
+    <div class="shopname">🎀 贴纸美容小铺 🎀<small>Sticker Beauty Shop</small></div>
+    <div class="door" id="door"><div class="shadow"></div><img class="who" id="doorImg" alt=""><div class="bang">!</div></div>
+  </div>
+  <div class="nav">
+    <button class="main" id="navServe"><b>💁</b>接待顾客</button>
+    <button id="navBag"><b>🎁</b>盲袋</button>
+    <button id="navStall"><b>🏪</b>贴纸小铺</button>
+    <button id="navStore"><b>🛍️</b>商店</button>
+    <button id="navAlbum"><b>📸</b>照片墙</button>
+    <button id="navLearn"><b>📖</b>学习卡</button>
+  </div>
+</section>
+
+<section class="screen" id="work">
+  <div class="topbar">
+    <button class="iconbtn" id="backBtn">🏠</button>
+    <div class="pill"><img src="img/d_coin.webp" alt=""><span class="coinN2">0</span></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="orderBtn" title="再听一遍">💬</button>
+  </div>
+  <div class="stations" id="stations"></div>
+  <div class="orderbar" id="orderBar"></div>
+  <div class="stagewrap">
+    <div class="stage" id="stage">
+      <div class="floor"></div><div class="foot"></div>
+      <canvas id="cv"></canvas>
+      <div class="layer" id="stkLayer"></div>
+      <img class="cursor" id="cursor" alt="">
+      <div class="fx" id="fx"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+  <div class="tray" id="tray"></div>
+</section>
+
+<section class="screen" id="store">
+  <div class="head"><button class="iconbtn" data-home>🏠</button><h1>🛍️ 商店</h1><div class="pill"><img src="img/d_coin.webp" alt=""><span class="coinN2">0</span></div></div>
+  <div class="tabs" style="padding:0 10px" id="storeTabs">
+    <button data-t="stk" class="on">饰品贴纸</button><button data-t="col">颜色</button><button data-t="dec">装修</button>
+  </div>
+  <div class="list"><div class="grid" id="storeGrid"></div></div>
+</section>
+
+<section class="screen" id="bag">
+  <div class="head"><button class="iconbtn" data-home>🏠</button><h1>🎁 盲袋 · 贴纸图鉴</h1><div class="pill"><img src="img/d_coin.webp" alt=""><span class="coinN2">0</span></div></div>
+  <div class="tabs" style="padding:0 10px" id="bagTabs"><button data-t="open" class="on">开盲袋</button><button data-t="dex">图鉴</button></div>
+  <div class="list" id="bagList"></div>
+</section>
+
+<section class="screen" id="stall">
+  <div class="head"><button class="iconbtn" data-home>🏠</button><h1>🏪 贴纸小铺</h1><div class="pill"><img src="img/d_coin.webp" alt=""><span class="coinN2">0</span></div></div>
+  <div class="top"><img class="bg" src="img2/bg_stall.webp" alt=""><img class="buyer" id="buyerImg" alt=""><div class="say" id="buyerSay"></div></div>
+  <div class="side" id="stallSide"></div>
+</section>
+
+<section class="screen" id="album">
+  <div class="head"><button class="iconbtn" data-home>🏠</button><h1>📸 照片墙</h1><span class="small" id="albumN"></span></div>
+  <div class="list"><div class="grid" id="albumGrid"></div></div>
+</section>
+
+<section class="screen" id="learn">
+  <div class="head"><button class="iconbtn" data-home>🏠</button><h1>📖 学习卡</h1><button class="btn yellow" style="font-size:16px;padding:8px 14px" id="quizBtn">小测验</button></div>
+  <div class="tabs" style="padding:0 10px;flex-wrap:wrap" id="learnTabs"></div>
+  <div class="list"><div class="grid" id="learnGrid"></div></div>
+</section>
+
+<div class="modal" id="modal"><div class="panel" id="panel"></div></div>
+</div>
+
+<script>
+'use strict';
+// ====================== 词库 ======================
+const COLORS = {
+  red:{zh:'红色',py:'hóng sè',en:'red',hex:'#ff4d5e',f:''},
+  pink:{zh:'粉色',py:'fěn sè',en:'pink',hex:'#ff8fc1',f:'hue-rotate(-28deg) saturate(.75) brightness(1.3)'},
+  orange:{zh:'橙色',py:'chéng sè',en:'orange',hex:'#ff9a3c',f:'hue-rotate(28deg) saturate(1.3) brightness(1.15)'},
+  yellow:{zh:'黄色',py:'huáng sè',en:'yellow',hex:'#ffd43b',f:'hue-rotate(50deg) saturate(1.6) brightness(1.45)'},
+  green:{zh:'绿色',py:'lǜ sè',en:'green',hex:'#4cd37a',f:'hue-rotate(115deg) saturate(1.1) brightness(1.1)'},
+  blue:{zh:'蓝色',py:'lán sè',en:'blue',hex:'#4aa8ff',f:'hue-rotate(205deg) saturate(1.1) brightness(1.15)'},
+  purple:{zh:'紫色',py:'zǐ sè',en:'purple',hex:'#a86bff',f:'hue-rotate(262deg) saturate(1) brightness(1.1)'},
+  white:{zh:'白色',py:'bái sè',en:'white',hex:'#ffffff',f:'grayscale(1) brightness(1.9) contrast(.9)'},
+  black:{zh:'黑色',py:'hēi sè',en:'black',hex:'#3a3040',f:'grayscale(1) brightness(.45) contrast(1.3)'},
+};
+const COLOR_BY_ZH = Object.fromEntries(Object.entries(COLORS).map(([k,v])=>[v.zh,k]));
+const STYLES = {
+  '公主裙':{py:'gōng zhǔ qún',en:'princess dress'},'水手服':{py:'shuǐ shǒu fú',en:'sailor suit'},
+  '汉服':{py:'hàn fú',en:'Hanfu'},'卫衣':{py:'wèi yī',en:'hoodie'},'背带裙':{py:'bēi dài qún',en:'overall dress'},
+  '芭蕾裙':{py:'bā lěi qún',en:'ballet dress'},'魔法裙':{py:'mó fǎ qún',en:'magic dress'},'旗袍':{py:'qí páo',en:'qipao'},
+  '骑士铠甲':{py:'qí shì kǎi jiǎ',en:'knight armor'},'王子服':{py:'wáng zǐ fú',en:'prince suit'},
+  '英雄披风':{py:'yīng xióng pī fēng',en:'hero cape'},'宇航服':{py:'yǔ háng fú',en:'space suit'},
+  '赛车服':{py:'sài chē fú',en:'racing suit'},'足球服':{py:'zú qiú fú',en:'soccer uniform'},
+  '恐龙服':{py:'kǒng lóng fú',en:'dinosaur suit'},'海盗服':{py:'hǎi dào fú',en:'pirate suit'},'忍者服':{py:'rěn zhě fú',en:'ninja suit'},
+  '小西装':{py:'xiǎo xī zhuāng',en:'suit'},'美人鱼裙':{py:'měi rén yú qún',en:'mermaid dress'},
+};
+const SHOE_STYLES = {'小皮鞋':{py:'xiǎo pí xié',en:'leather shoes'},'小靴子':{py:'xiǎo xuē zi',en:'boots'},'运动鞋':{py:'yùn dòng xié',en:'sneakers'}};
+// 饰品贴纸（原图红色，可换色）
+const STICKERS = {
+  bow:{zh:'蝴蝶结',py:'hú dié jié',en:'bow',color:true,price:0,size:26},
+  flower:{zh:'花',py:'huā',en:'flower',color:true,price:0,size:20},
+  starclip:{zh:'星星发夹',py:'xīng xing fà jiā',en:'star clip',color:true,price:0,size:18},
+  crown:{zh:'皇冠',py:'huáng guān',en:'crown',color:false,price:0,size:34},
+  heart:{zh:'爱心',py:'ài xīn',en:'heart',color:true,price:0,size:12},
+  sparkle:{zh:'星星',py:'xīng xing',en:'stars',plural:true,color:false,price:0,size:20},
+  glasses:{zh:'眼镜',py:'yǎn jìng',en:'glasses',plural:true,color:true,price:8,size:40},
+  butterfly:{zh:'蝴蝶',py:'hú dié',en:'butterfly',color:true,price:8,size:20},
+  hat:{zh:'帽子',py:'mào zi',en:'hat',color:true,price:10,size:40},
+  sun:{zh:'太阳',py:'tài yáng',en:'sun',color:false,price:6,size:18},
+  moon:{zh:'月亮',py:'yuè liang',en:'moon',color:false,price:6,size:18},
+  cloud:{zh:'云朵',py:'yún duǒ',en:'cloud',color:false,price:6,size:22},
+  rainbow:{zh:'彩虹',py:'cǎi hóng',en:'rainbow',color:false,price:10,size:30},
+  necklace:{zh:'项链',py:'xiàng liàn',en:'necklace',color:false,price:12,size:36},
+};
+// 盲袋贴纸：r=稀有度 1普通 2稀有 3闪亮
+const BAG = {
+  a_rabbit:{zh:'小兔',py:'xiǎo tù',en:'rabbit',r:1},a_cat:{zh:'小猫',py:'xiǎo māo',en:'cat',r:1},a_dog:{zh:'小狗',py:'xiǎo gǒu',en:'dog',r:1},
+  a_bear:{zh:'小熊',py:'xiǎo xióng',en:'bear',r:1},a_panda:{zh:'熊猫',py:'xióng māo',en:'panda',r:3},a_pig:{zh:'小猪',py:'xiǎo zhū',en:'pig',r:1},
+  a_duck:{zh:'小鸭',py:'xiǎo yā',en:'duck',r:1},a_fish:{zh:'小鱼',py:'xiǎo yú',en:'fish',r:1},a_bird:{zh:'小鸟',py:'xiǎo niǎo',en:'bird',r:2},
+  a_monkey:{zh:'小猴',py:'xiǎo hóu',en:'monkey',r:2},a_tiger:{zh:'老虎',py:'lǎo hǔ',en:'tiger',r:2},a_elephant:{zh:'大象',py:'dà xiàng',en:'elephant',r:2},
+  f_apple:{zh:'苹果',py:'píng guǒ',en:'apple',r:1},f_banana:{zh:'香蕉',py:'xiāng jiāo',en:'banana',r:1},f_strawberry:{zh:'草莓',py:'cǎo méi',en:'strawberry',r:1},
+  f_watermelon:{zh:'西瓜',py:'xī guā',en:'watermelon',r:1},f_icecream:{zh:'冰淇淋',py:'bīng qí lín',en:'ice cream',r:2},f_cake:{zh:'蛋糕',py:'dàn gāo',en:'cake',r:3},
+  f_candy:{zh:'糖果',py:'táng guǒ',en:'candy',r:1},f_donut:{zh:'甜甜圈',py:'tián tián quān',en:'donut',r:2},f_milk:{zh:'牛奶',py:'niú nǎi',en:'milk',r:1},
+  f_cookie:{zh:'饼干',py:'bǐng gān',en:'cookie',r:1},f_orange:{zh:'橙子',py:'chéng zi',en:'orange',r:1},f_grape:{zh:'葡萄',py:'pú tao',en:'grapes',r:1},
+  o_star:{zh:'星星',py:'xīng xing',en:'star',r:1},o_heart:{zh:'爱心',py:'ài xīn',en:'heart',r:1},o_rainbow:{zh:'彩虹',py:'cǎi hóng',en:'rainbow',r:3},
+  o_balloon:{zh:'气球',py:'qì qiú',en:'balloon',r:1},o_ball:{zh:'皮球',py:'pí qiú',en:'ball',r:1},o_kite:{zh:'风筝',py:'fēng zheng',en:'kite',r:2},
+  o_car:{zh:'小汽车',py:'xiǎo qì chē',en:'car',r:2},o_book:{zh:'书',py:'shū',en:'book',r:1},o_pencil:{zh:'铅笔',py:'qiān bǐ',en:'pencil',r:1},
+  o_bag:{zh:'书包',py:'shū bāo',en:'school bag',r:2},o_umbrella:{zh:'雨伞',py:'yǔ sǎn',en:'umbrella',r:1},o_flower:{zh:'郁金香',py:'yù jīn xiāng',en:'tulip',r:1},
+};
+const RAR = {1:{zh:'普通',p:2},2:{zh:'稀有',p:3},3:{zh:'闪亮',p:5}};
+const DECOR = {
+  balloon:{zh:'气球',py:'qì qiú',en:'balloons',price:8,pos:[4,18,22]},
+  plant:{zh:'盆栽',py:'pén zāi',en:'plant',price:10,pos:[74,56,24]},
+  lamp:{zh:'星星灯',py:'xīng xing dēng',en:'star lights',price:12,pos:[3,6,13]},
+  mirror:{zh:'镜子',py:'jìng zi',en:'mirror',price:15,pos:[70,20,26]},
+  sofa:{zh:'沙发',py:'shā fā',en:'sofa',price:20,pos:[2,58,34]},
+  cat:{zh:'小猫',py:'xiǎo māo',en:'cat',price:25,pos:[76,74,20]},
+};
+// 分部位：清洁工具流程
+const PARTS = {
+  hair:{zh:'头发',py:'tóu fa',en:'hair',say:'我的头发好脏呀，帮我洗洗吧！',price:3,svc:'洗头'},
+  face:{zh:'脸',py:'liǎn',en:'face',say:'我的脸脏兮兮的！',price:2,svc:'洗脸'},
+  clothes:{zh:'衣服',py:'yī fu',en:'clothes',say:'我的衣服乱了，身上也脏了，帮我整理一下！',price:2,svc:'整理衣服'},
+  shoes:{zh:'鞋子',py:'xié zi',en:'shoes',say:'我的鞋子破了！',price:3,svc:'修鞋'},
+};
+const TOOLS = {
+  shampoo:{zh:'洗发水',py:'xǐ fà shuǐ',en:'shampoo',part:'hair',act:'foam',img:'img2/t_shampoo'},
+  shower:{zh:'花洒',py:'huā sǎ',en:'shower',part:'hair',act:'rinse',img:'img2/t_shower'},
+  dryer:{zh:'吹风机',py:'chuī fēng jī',en:'hair dryer',part:'hair',act:'dry',img:'img2/t_dryer'},
+  facewash:{zh:'洗面奶',py:'xǐ miàn nǎi',en:'face wash',part:'face',act:'foam',img:'img2/t_facewash'},
+  towel:{zh:'毛巾',py:'máo jīn',en:'towel',part:'face',act:'rinse',img:'img/t_towel'},
+  sponge:{zh:'海绵',py:'hǎi mián',en:'sponge',part:'clothes',act:'foam',img:'img2/t_sponge'},
+  iron:{zh:'熨斗',py:'yùn dǒu',en:'iron',part:'clothes',act:'rinse',img:'img2/t_iron'},
+  needle:{zh:'针线',py:'zhēn xiàn',en:'needle',part:'shoes',act:'rub',img:'img2/t_needle'},
+};
+const MAKEUP = {
+  lipstick:{zh:'口红',py:'kǒu hóng',en:'lipstick',img:'img2/t_lipstick',cols:['red','pink','orange','purple']},
+  blush:{zh:'腮红',py:'sāi hóng',en:'blush',img:'img2/t_blush',cols:['pink','red','orange']},
+  eyeshadow:{zh:'眼影',py:'yǎn yǐng',en:'eye shadow',img:'img2/t_eyeshadow',cols:['purple','blue','pink','yellow']},
+  nose:{zh:'鼻子',py:'bí zi',en:'nose',img:'img2/t_nose',cols:['pink','red','black']},
+  cotton:{zh:'卸妆棉',py:'xiè zhuāng mián',en:'cotton pad',img:'img2/t_cotton',cols:[]},
+};
+const PHOTO_BG = {shop:{zh:'小店',py:'xiǎo diàn',src:'img/bg_shop.webp'},bgp_garden:{zh:'花园',py:'huā yuán',src:'img2/bgp_garden.webp'},
+  bgp_beach:{zh:'海边',py:'hǎi biān',src:'img2/bgp_beach.webp'},bgp_castle:{zh:'城堡',py:'chéng bǎo',src:'img2/bgp_castle.webp'},bgp_stage:{zh:'舞台',py:'wǔ tái',src:'img2/bgp_stage.webp'}};
+const STATIONS = {
+  wash:{zh:'洗护台',py:'xǐ hù tái',ico:'🧴'},shoe:{zh:'修鞋铺',py:'xiū xié pù',ico:'👟'},makeup:{zh:'化妆台',py:'huà zhuāng tái',ico:'💄'},
+  style:{zh:'造型台',py:'zào xíng tái',ico:'👗'},photo:{zh:'拍照',py:'pāi zhào',ico:'📸'},pay:{zh:'收银',py:'shōu yín',ico:'💰'},
+};
+let CH = {};  // 角色表，来自 img2/chars.json
+const LEARN = () => ({
+  '颜色':Object.values(COLORS).map(c=>({zh:c.zh,py:c.py,en:c.en,sw:c.hex})),
+  '动物':Object.entries(BAG).filter(([k])=>k[0]==='a').map(([k,b])=>({zh:b.zh,py:b.py,en:b.en,img:'img2/k_'+k})),
+  '食物':Object.entries(BAG).filter(([k])=>k[0]==='f').map(([k,b])=>({zh:b.zh,py:b.py,en:b.en,img:'img2/k_'+k})),
+  '身体':[{zh:'头发',py:'tóu fa',en:'hair',emo:'💇'},{zh:'脸',py:'liǎn',en:'face',emo:'😊'},{zh:'眼睛',py:'yǎn jing',en:'eyes',emo:'👀'},
+    {zh:'鼻子',py:'bí zi',en:'nose',emo:'👃'},{zh:'嘴巴',py:'zuǐ ba',en:'mouth',emo:'👄'},{zh:'手',py:'shǒu',en:'hand',emo:'✋'},{zh:'脚',py:'jiǎo',en:'foot',emo:'🦶'},{zh:'耳朵',py:'ěr duo',en:'ears',emo:'👂'}],
+  '工具':Object.values(TOOLS).concat(Object.values(MAKEUP)).map(t=>({zh:t.zh,py:t.py,en:t.en,img:t.img})),
+  '英语课本':[{zh:'书',py:'shū',en:'book',emo:'📖'},{zh:'书包',py:'shū bāo',en:'school bag',emo:'🎒'},{zh:'铅笔',py:'qiān bǐ',en:'pencil',emo:'✏️'},
+    {zh:'尺子',py:'chǐ zi',en:'ruler',emo:'📏'},{zh:'门',py:'mén',en:'door',emo:'🚪'},{zh:'椅子',py:'yǐ zi',en:'chair',emo:'🪑'},{zh:'教室',py:'jiào shì',en:'classroom',emo:'🏫'}],
+  '识字':[{zh:'日',py:'rì',en:'sun',emo:'☀️'},{zh:'月',py:'yuè',en:'moon',emo:'🌙'},{zh:'山',py:'shān',en:'mountain',emo:'⛰️'},{zh:'水',py:'shuǐ',en:'water',emo:'💧'},
+    {zh:'火',py:'huǒ',en:'fire',emo:'🔥'},{zh:'木',py:'mù',en:'tree',emo:'🌳'},{zh:'口',py:'kǒu',en:'mouth',emo:'👄'},{zh:'耳',py:'ěr',en:'ear',emo:'👂'},
+    {zh:'目',py:'mù',en:'eye',emo:'👁️'},{zh:'手',py:'shǒu',en:'hand',emo:'✋'},{zh:'足',py:'zú',en:'foot',emo:'🦶'},{zh:'人',py:'rén',en:'person',emo:'🧍'}],
+});
+
+// ====================== 存档 ======================
+const SAVE_KEY = 'sticker-shop-v1';
+const DEFAULT_STATE = {coins:10,stars:0,day:1,servedToday:0,served:0,stk:['bow','flower','starclip','crown','heart','sparkle'],
+  col:['red','pink','blue','yellow'],dec:[],album:[],quizDay:0,quizCoins:0,mute:false,mathOk:0,mathTry:0,bag:{},bagOpened:0,seen:[]};
+let S = load();
+function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(s) return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)),s); }catch(e){} return JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+function save(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(S)); }catch(e){} }
+
+// ====================== 小工具 ======================
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const img=n=>n.includes('/')?`${n}.webp`:`img/${n}.webp`;
+const cimg=(cid,n)=>`img2/${cid}_${n}.webp`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ruby(zh,py){ const cs=[...zh], ps=py.split(/\s+/);
+  if(cs.length!==ps.length) return `<span class="rw"><ruby>${esc(zh)}<rt>${esc(py)}</rt></ruby></span>`;
+  return '<span class="rw">'+cs.map((c,i)=>`<ruby>${esc(c)}<rt>${esc(ps[i])}</rt></ruby>`).join('')+'</span>'; }
+function show(id){ $$('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); if(id==='work') requestAnimationFrame(fitStage); }
+function fitStage(){ const w=$('.stagewrap'), st=$('#stage'); if(!w||!st) return; const W=w.clientWidth*0.96, H=w.clientHeight-8;
+  const sw=Math.min(W,H*7/9); st.style.width=sw+'px'; st.style.height=(sw*9/7)+'px'; if(V.ready) V.resize(); }
+const LANDSCAPE=matchMedia('(min-aspect-ratio: 5/4) and (min-width: 900px)');
+function applyScale(){ const app=$('#app');
+  if(!LANDSCAPE.matches){ app.style.zoom=''; app.style.width=''; app.style.height=''; app.style.removeProperty('--apph'); fitStage(); return; }
+  const z=Math.max(1,Math.min(innerHeight/760,innerWidth/1350,2.4));
+  app.style.zoom=z; app.style.width=(innerWidth/z)+'px'; app.style.height=(innerHeight/z)+'px'; app.style.setProperty('--apph',(innerHeight/z)+'px'); fitStage(); }
+function toast(t){ const d=document.createElement('div'); d.className='toast'; d.innerHTML=t; $('#app').appendChild(d); setTimeout(()=>d.remove(),1500); }
+function sparks(host,x,y,n=10,chars='✨⭐💖🌟'){ for(let i=0;i<n;i++){ const s=document.createElement('div'); s.className='spark'; s.textContent=pick([...chars]);
+  s.style.left=x+'%'; s.style.top=y+'%'; const a=Math.random()*Math.PI*2, r=40+Math.random()*80;
+  s.style.setProperty('--dx',Math.cos(a)*r+'px'); s.style.setProperty('--dy',Math.sin(a)*r+'px'); host.appendChild(s); setTimeout(()=>s.remove(),1000); } }
+function modal(html){ $('#panel').innerHTML=html; $('#modal').classList.add('on'); }
+function closeModal(){ $('#modal').classList.remove('on'); }
+
+// ---- 声音 ----
+let voices=[]; function loadVoices(){ try{ voices=speechSynthesis.getVoices(); }catch(e){} }
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+function voiceFor(lang){ const m=voices.filter(v=>v.lang&&v.lang.replace('_','-').toLowerCase().startsWith(lang)); return m.find(v=>/natural|online/i.test(v.name))||m[0]||null; }
+function sysSay(parts){ if(!('speechSynthesis' in window)) return; try{ speechSynthesis.cancel();
+  for(const [t,l] of parts){ if(!t) continue; const u=new SpeechSynthesisUtterance(t); const zh=l!=='en'; u.lang=zh?'zh-CN':'en-US';
+    const v=voiceFor(zh?'zh':'en-us')||voiceFor(zh?'zh':'en'); if(v) u.voice=v; u.rate=zh?1:0.85; speechSynthesis.speak(u); } }catch(e){} }
+const TTS_OK=location.protocol.startsWith('http');
+let sayToken=0, curAudio=null, speaker=null;  // speaker: 当前说话的顾客 id
+function voiceKey(l,who){ if(l==='en') return 'en'; if(who==='c'&&speaker) return CH[speaker]?.boy?'boy':'girl'; return 'narrator'; }
+function stopVoice(){ sayToken++; if(curAudio){ try{curAudio.pause()}catch(e){} curAudio=null; } try{speechSynthesis.cancel()}catch(e){} }
+// parts: [[文本,'zh'|'en','c'(顾客说的)],...] 依次朗读
+function say(parts){ if(S.mute) return; if(!TTS_OK) return sysSay(parts);
+  stopVoice(); const tok=sayToken;
+  const clips=parts.filter(p=>p[0]).map(([t,l,w])=>{ const a=new Audio('tts?v='+voiceKey(l,w)+'&t='+encodeURIComponent(t)); a.preload='auto'; return {a,t,l}; });
+  let i=0; const next=()=>{ if(tok!==sayToken||i>=clips.length) return; const c=clips[i++]; curAudio=c.a;
+    c.a.onended=next; c.a.onerror=()=>{ if(tok===sayToken) sysSay([[c.t,c.l]]); }; c.a.play().catch(()=>{}); }; next(); }
+let actx=null;
+function beep(kind){ if(S.mute) return; try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const notes={ok:[660,880,1320],pop:[520],bad:[300,220],coin:[988,1319],win:[523,659,784,1047],tear:[200,160,120]}[kind]||[600];
+  notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='triangle'; o.frequency.value=f; const t=actx.currentTime+i*0.09;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.3); }); }catch(e){} }
+function wordSay(w){ say([[w.zh,'zh'],[w.en,'en']]); }
+
+// ====================== 图片缓存 ======================
+const IMG={};
+function loadImg(src){ if(IMG[src]) return IMG[src]; IMG[src]=new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); return IMG[src]; }
+
+// ====================== 角色画布（分部位刮刮卡） ======================
+// 底图 = 干净版；每个部位一张「只含该部位脏样子」的透明贴片，孩子擦过的地方（reveal 遮罩）把它抹掉。
+const LW=180, LH=231;  // 低分辨率遮罩尺寸（与角色图同比例）
+const V = {
+  ready:false, cv:null, ctx:null, tmp:null, t2:null, foamPat:null,
+  init(){ this.cv=$('#cv'); this.ctx=this.cv.getContext('2d'); this.tmp=document.createElement('canvas'); this.t2=document.createElement('canvas');
+    // 泡泡纹理
+    const p=document.createElement('canvas'); p.width=p.height=48; const g=p.getContext('2d'); g.fillStyle='rgba(255,255,255,.88)'; g.fillRect(0,0,48,48);
+    for(let i=0;i<9;i++){ const x=rnd(4,44), y=rnd(4,44), r=rnd(3,8); g.beginPath(); g.arc(x,y,r,0,7); g.strokeStyle='rgba(150,200,255,.9)'; g.lineWidth=1.5; g.stroke();
+      g.beginPath(); g.arc(x-r*.35,y-r*.35,r*.25,0,7); g.fillStyle='#fff'; g.fill(); }
+    this.foamPat=p; this.ready=true; this.resize(); },
+  resize(){ const st=$('#stage'); if(!st||!this.cv) return; const r=Math.min(2,devicePixelRatio||1);
+    const w=Math.round(st.clientWidth*r), h=Math.round(st.clientHeight*r); if(!w||!h) return;
+    for(const c of [this.cv,this.tmp,this.t2]){ c.width=w; c.height=h; } this.draw(); },
+  draw(){ if(!this.ready||!job||!job.imgs) return; const c=this.ctx, W=this.cv.width, H=this.cv.height, im=job.imgs;
+    c.clearRect(0,0,W,H);
+    if(job.outfit && im.outfits[job.outfit]) c.drawImage(im.outfits[job.outfit],0,0,W,H);
+    else if(job.allClean && im.clean) c.drawImage(im.clean,0,0,W,H);
+    else {
+      // 干净版打底，各部位的「脏贴片」按 衣服→鞋→头发→脸 盖上去；擦过的地方（reveal）把脏贴片抹掉
+      if(im.clean) c.drawImage(im.clean,0,0,W,H);
+      for(const p of ['clothes','shoes','hair','face']){ const P=job.parts[p], pi=im.parts[p]; if(!pi||P.st!=='todo') continue;
+        this.masked(pi,P.revC); c.drawImage(this.tmp,0,0,W,H);
+        if(P.foamC){ const t=this.t2.getContext('2d'); t.globalCompositeOperation='source-over'; t.clearRect(0,0,W,H);
+          t.fillStyle=t.createPattern(this.foamPat,'repeat'); t.fillRect(0,0,W,H); t.globalCompositeOperation='destination-in'; t.drawImage(P.foamC,0,0,W,H);
+          t.globalCompositeOperation='source-over'; c.drawImage(this.t2,0,0,W,H); } } }
+    if(job.shoes && im.shoes[job.shoes]) c.drawImage(im.shoes[job.shoes],0,0,W,H);
+    if(job.mk){ c.globalAlpha=.6; c.drawImage(job.mk.c,0,0,W,H); c.globalAlpha=1; } },
+  masked(src,maskC){ const t=this.tmp.getContext('2d'), W=this.tmp.width, H=this.tmp.height;
+    t.globalCompositeOperation='source-over'; t.clearRect(0,0,W,H); t.drawImage(src,0,0,W,H);
+    t.globalCompositeOperation='destination-out'; t.drawImage(maskC,0,0,W,H); t.globalCompositeOperation='source-over'; },
+};
+// 从贴片的透明度得到低分辨率部位遮罩（需要 http 同源；file:// 下画布被污染就退回整块矩形）
+function lowAlpha(im){ const c=document.createElement('canvas'); c.width=LW; c.height=LH; const g=c.getContext('2d'); g.drawImage(im,0,0,LW,LH);
+  try{ const d=g.getImageData(0,0,LW,LH).data, a=new Uint8Array(LW*LH); for(let i=0;i<a.length;i++) a[i]=d[i*4+3]; return a; }
+  catch(e){ const a=new Uint8Array(LW*LH).fill(255); return a; } }
+function arrCanvas(){ const c=document.createElement('canvas'); c.width=LW; c.height=LH; return c; }
+function pushArr(c,arr){ const g=c.getContext('2d'), d=g.createImageData(LW,LH); for(let i=0;i<arr.length;i++){ d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=255; d.data[i*4+3]=arr[i]; } g.putImageData(d,0,0); }
+
+// ====================== 店铺 ======================
+const PER_DAY=3;
+function level(){ return S.stars<15?1:S.stars<40?2:S.stars<80?3:S.stars<130?4:5; }
+function unlocked(){ return Object.keys(CH).filter(k=>(CH[k].unlock||1)<=S.day); }
+let nextCust=null;
+function chooseNext(){ const fresh=unlocked().find(k=>CH[k].unlock===S.day && !S.seen.includes(k));
+  if(fresh){ nextCust=fresh; return; }
+  const pool=unlocked().filter(k=>k!==S.lastCust); const w=pool.flatMap(k=>k==='zm'?[k,k]:[k]);  // 主角折耳妹妹常来
+  nextCust=pick(w.length?w:unlocked()); }
+function renderShop(){
+  $('#coinN').textContent=S.coins; $$('.coinN2').forEach(e=>e.textContent=S.coins); $('#starN').textContent=S.stars;
+  $('#dayTxt').textContent=`第 ${S.day} 天`; $('#levelTxt').textContent='人气 '+'💗'.repeat(level());
+  $('#dayDots').innerHTML=Array.from({length:PER_DAY},(_,i)=>`<i class="${i<S.servedToday?'done':''}"></i>`).join('');
+  $('#muteBtn').textContent=S.mute?'🔇':'🔊';
+  $('#decorLayer').innerHTML=S.dec.map(k=>{const d=DECOR[k];return `<img class="decor" src="${img('d_'+k)}" style="left:${d.pos[0]}%;top:${d.pos[1]}%;width:${d.pos[2]}%" alt="">`}).join('');
+  if(!nextCust) chooseNext();
+  const door=$('#door'); door.style.animation='none'; void door.offsetWidth; door.style.animation='';
+  $('#doorImg').src=cimg(nextCust,'messy'); }
+function goShop(){ show('shop'); renderShop(); }
+
+// ====================== 接待：问题 + 心愿 ======================
+let job=null;
+function makeJob(cid){
+  const d=S.day, c=CH[cid];
+  // 脏的部位：主角每次都全脏（爆改！），其他人天数越多越脏
+  const all=Object.keys(PARTS); let dirty = cid==='zm' ? all : shuffle(all).slice(0, Math.min(4, d<=1?2:d<=3?3:rnd(3,4)));
+  const parts={}; all.forEach(p=>parts[p]={st:dirty.includes(p)?'todo':'clean'});
+  const wishes=[];
+  if(dirty.includes('shoes')){ if(Math.random()<0.5 && c.shoes.length){ const s=pick(c.shoes); wishes.push({t:'shoes',id:s[0],col:COLOR_BY_ZH[s[1]],style:s[2]}); } else wishes.push({t:'repair'}); }
+  const mk=pick(['lipstick','blush','eyeshadow']); wishes.push({t:'makeup',tool:mk,col:pick(mkCols(mk))});
+  if(c.outfits.length){ const o=pick(c.outfits); wishes.push({t:'outfit',id:o[0],col:COLOR_BY_ZH[o[1]],style:o[2]}); }
+  const nAcc=d<=2?1:2; shuffle(S.stk).slice(0,nAcc).forEach(k=>wishes.push({t:'acc',k,col:STICKERS[k].color&&d>=2?pick(S.col):null}));
+  return {cid,parts,wishes,english:d>=3&&Math.random()<0.3,outfit:null,shoes:null,repaired:false,stickers:[],sel:null,
+    mk:null,bg:'shop',station:0,imgs:null,allClean:false};
+}
+function wishText(w){ // [html, 中文, 英文]
+  const art=x=>/^[aeiou]/i.test(x)?'an':'a';
+  if(w.t==='repair') return [`${ruby('补','bǔ')}${ruby('好','hǎo')}${kw('鞋子','xié zi')}`,'把鞋子补好','fix my shoes'];
+  if(w.t==='shoes'){ const c=COLORS[w.col], s=SHOE_STYLES[w.style]; return [`${ruby('一','yì')}${ruby('双','shuāng')}${kw(c.zh,c.py,{sw:c.hex})}${ruby('的','de')}${kw(w.style,s.py)}`,`一双${c.zh}的${w.style}`,`${c.en} ${s.en}`]; }
+  if(w.t==='makeup'){ const c=COLORS[w.col], m=MAKEUP[w.tool]; return [`${kw(c.zh,c.py,{sw:c.hex})}${ruby('的','de')}${kw(m.zh,m.py,{icon:img(m.img)})}`,`${c.zh}的${m.zh}`,`${c.en} ${m.en}`]; }
+  if(w.t==='outfit'){ const c=COLORS[w.col], s=STYLES[w.style]; return [`${kw(c.zh,c.py,{sw:c.hex})}${ruby('的','de')}${kw(w.style,s.py)}`,`${c.zh}的${w.style}`,`${art(c.en)} ${c.en} ${s.en}`]; }
+  const st=STICKERS[w.k]; const c=w.col?COLORS[w.col]:null;
+  return [`${c?kw(c.zh,c.py,{sw:c.hex})+ruby('的','de'):''}${kw(st.zh,st.py,{icon:img('s_'+w.k),f:c?c.f:''})}`,`${c?c.zh+'的':''}${st.zh}`,st.plural?`${c?c.en+' ':''}${st.en}`:`${art(c?c.en:st.en)} ${c?c.en+' ':''}${st.en}`];
+}
+function kw(zh,py,{sw,icon,f}={}){ return `<span class="kw" data-zh="${esc(zh)}">${sw?`<span class="chip" style="background:${sw}"></span>`:''}${icon?`<img src="${icon}" style="${f?'filter:'+f:''}" alt="">`:''}${ruby(zh,py)}</span>`; }
+function orderTexts(j){
+  const dirty=Object.keys(PARTS).filter(p=>j.parts[p].st==='todo');
+  const zhProb=dirty.map(p=>PARTS[p].say).join('');
+  const w=j.wishes.map(wishText);
+  const zhWish='我还想要'+w.map(x=>x[1]).join('，还有')+'。';
+  const enProb=dirty.length?`My ${dirty.map(p=>PARTS[p].en).join(' and ')} ${dirty.length>1||dirty[0]==='shoes'||dirty[0]==='clothes'?'are':'is'} dirty!`:'';
+  const enWish='I want '+w.map(x=>x[2]).join(', and ')+'.';
+  const html=`<div>${dirty.map(p=>`${kw(PARTS[p].zh,PARTS[p].py)}`).join(' ')} ${ruby('脏','zāng')}${ruby('了','le')}！</div><div>${ruby('我','wǒ')}${ruby('还','hái')}${ruby('想','xiǎng')}${ruby('要','yào')}：${w.map(x=>x[0]).join('、')}</div>`;
+  return {html,zh:zhProb+zhWish,en:enProb+' '+enWish};
+}
+function speakOrder(){ const t=orderTexts(job); speaker=job.cid; if(job.english) say([[t.en,'en','c']]); else say([[t.zh,'zh','c']]); }
+function bindKw(root){ root.querySelectorAll('.kw').forEach(k=>k.onclick=e=>{ e.stopPropagation(); const zh=k.dataset.zh;
+  const w=Object.values(COLORS).find(c=>c.zh===zh)||Object.values(STICKERS).find(s=>s.zh===zh)||Object.values(MAKEUP).find(s=>s.zh===zh)||Object.values(PARTS).find(s=>s.zh===zh)
+    ||(STYLES[zh]&&{en:STYLES[zh].en})||(SHOE_STYLES[zh]&&{en:SHOE_STYLES[zh].en}); say([[zh,'zh'],[w?w.en:'','en']]); }); }
+async function startServe(){
+  if(S.servedToday>=PER_DAY){ endDay(); return; }
+  const cid=nextCust; S.seen=[...new Set([...(S.seen||[]),cid])]; S.lastCust=cid; save();
+  job=makeJob(cid); const c=CH[cid], t=orderTexts(job);
+  const isNew=c.unlock===S.day&&S.day>1;
+  const body= job.english ? `<div class="bubble"><span class="en" style="font-size:21px">${esc(t.en)}</span><div id="zhHint" style="display:none">${t.html}</div></div>
+      <div class="row" style="margin-top:10px"><button class="btn gray" id="hintBtn" style="font-size:16px">🀄 看中文</button></div>`
+    : `<div class="bubble">${t.html}<span class="en">${esc(t.en)}</span></div>`;
+  modal(`<h2>${isNew?'🎉 新顾客 ':''}${ruby(c.name,c.py)} 来啦！</h2>${body}<img class="face" src="${cimg(cid,'messy')}" alt="">
+    <div class="row" style="gap:10px;margin-top:8px"><button class="btn aqua" id="againBtn">🔊 再听</button><button class="btn" id="goBtn">开始改造！</button></div>`);
+  bindKw($('#panel')); $('#againBtn').onclick=speakOrder;
+  if($('#hintBtn')) $('#hintBtn').onclick=()=>{ $('#zhHint').style.display='block'; speaker=cid; say([[t.zh,'zh','c']]); };
+  $('#goBtn').onclick=()=>{ closeModal(); beginWork(); };
+  setTimeout(speakOrder,250);
+  loadJobImages(job);  // 先开始加载
+}
+async function loadJobImages(j){
+  if(j.imgsP) return j.imgsP; const c=CH[j.cid];
+  j.imgsP=(async()=>{ const im={messy:await loadImg(cimg(j.cid,'messy')),clean:await loadImg(cimg(j.cid,'clean')),parts:{},outfits:{},shoes:{}};
+    for(const p of Object.keys(PARTS)) im.parts[p]=await loadImg(cimg(j.cid,'p_'+p));
+    for(const o of c.outfits) im.outfits[o[0]]=await loadImg(cimg(j.cid,'o_'+o[0]));
+    for(const s of c.shoes) im.shoes[s[0]]=await loadImg(cimg(j.cid,'s_'+s[0]));
+    return im; })();
+  return j.imgsP;
+}
+function stationList(){ const L=[]; const p=job.parts;
+  if(['hair','face','clothes'].some(k=>p[k].st==='todo')) L.push('wash');
+  if(p.shoes.st==='todo') L.push('shoe');
+  L.push('makeup','style','photo','pay'); return L; }
+async function beginWork(){
+  show('work'); job.imgs=await loadJobImages(job);
+  for(const p of Object.keys(PARTS)){ const P=job.parts[p]; if(!job.imgs.parts[p]) { P.st='clean'; continue; }
+    P.mask=lowAlpha(job.imgs.parts[p]); P.total=P.mask.reduce((s,v)=>s+(v>40?1:0),0)||1;
+    if(P.st==='todo'){ P.rev=new Uint8Array(LW*LH); P.revC=arrCanvas(); P.foam=new Uint8Array(LW*LH); P.foamC=arrCanvas(); P.dry=0; P.prog=0; P.stage=p==='clothes'||p==='shoes'?1:0; } }
+  job.list=stationList(); job.station=0;
+  if(!V.ready) V.init(); fitStage(); enterStation();
+}
+
+// ====================== 工作台切换 ======================
+function curStation(){ return job.list[job.station]; }
+function renderStations(){ $('#stations').innerHTML=job.list.map((s,i)=>`<div class="stn ${i===job.station?'cur':''} ${i<job.station?'done':''}"><b>${STATIONS[s].ico}</b>${STATIONS[s].zh}</div>`).join(''); }
+function wishMet(w){
+  if(w.t==='repair') return job.repaired||!!job.shoes;
+  if(w.t==='shoes') return job.shoes===w.id;
+  if(w.t==='makeup') return job.mk && (job.mk.amt[w.tool+'|'+w.col]||0)>=0.5;
+  if(w.t==='outfit') return job.outfit===w.id;
+  return job.stickers.some(s=>s.k===w.k&&(!w.col||s.col===w.col));
+}
+function renderOrderBar(){
+  const c=CH[job.cid];
+  const probs=Object.keys(PARTS).filter(p=>job.parts[p].st!=='clean').map(p=>`<span class="req ${job.parts[p].st==='done'?'ok':''}">${ruby(PARTS[p].zh,PARTS[p].py)}</span>`);
+  const ws=job.wishes.map(w=>`<span class="req ${wishMet(w)?'ok':''}">${wishText(w)[0].replace(/class="kw"/g,'class="kwx"')}</span>`);
+  $('#orderBar').innerHTML=`<span class="small">${ruby(c.name,c.py)}：</span>`+probs.join('')+ws.join('');
+}
+function setHint(t){ const h=$('#hint'); h.innerHTML=t||''; h.style.display=t?'block':'none'; }
+function enterStation(){
+  job.tool=null; job.sel=null; renderStations(); renderOrderBar();
+  const s=curStation(); $('#stkLayer').innerHTML=''; $('#stage').style.backgroundImage='';
+  if(s!=='style'&&s!=='photo') renderStickers(true);
+  ({wash:enterWash,shoe:enterShoe,makeup:enterMakeup,style:enterStyle,photo:enterPhoto,pay:enterPay})[s]();
+  V.draw();
+}
+function nextStation(){ job.station++; beep('pop'); if(job.station>=job.list.length) return; enterStation(); }
+function nextBtn(enabled,label){ return `<div class="nextbar"><button class="btn green" id="nextBtn" ${enabled?'':'disabled'}>${label||'下一步 ▶'}</button></div>`; }
+function bindNext(){ const b=$('#nextBtn'); if(b) b.onclick=()=>{ if(!b.disabled) nextStation(); }; }
+
+// ====================== 洗护台 / 修鞋铺：擦拭 ======================
+function enterWash(){ renderWashTray(); setHint('👇 选工具，在身上擦一擦'); speaker=null; say([['洗护台！先选工具，把身上弄干净吧','zh']]); }
+const PART_TOOLS={hair:['shampoo','shower','dryer'],face:['facewash','towel'],clothes:['sponge','iron'],shoes:['needle']};
+function partStepText(p){ const P=job.parts[p];
+  if(P.st==='done'||P.st==='clean') return '✅';
+  if(p==='hair') return P.prog<0.9?'洗发水 → 花洒':'吹风机';
+  if(p==='face') return '洗面奶 → 毛巾';
+  if(p==='clothes') return '海绵 → 熨斗';
+  return '针线'; }
+function renderWashTray(which='wash'){
+  const parts= which==='wash'?['hair','face','clothes']:['shoes'];
+  const rows=parts.filter(p=>job.parts[p].st!=='clean').map(p=>{ const P=job.parts[p]; const pct=P.st==='done'?100:Math.round((p==='hair'&&P.prog>=0.9?0.9+0.1*P.dry:P.prog)*100);
+    return `<div class="partrow">${ruby(PARTS[p].zh,PARTS[p].py)}<div class="progress"><i style="width:${pct}%"></i></div><span class="small">${partStepText(p)}</span></div>`; }).join('');
+  const tools=parts.flatMap(p=>job.parts[p].st==='todo'?PART_TOOLS[p]:[]);
+  const done=parts.every(p=>job.parts[p].st!=='todo');
+  let extra='';
+  if(which==='shoe'){ const c=CH[job.cid];
+    extra=`<div class="small" style="margin:6px 0 2px">或者换一双新鞋(${ruby('新','xīn')}${ruby('鞋','xié')} 6 元)：</div><div class="items">${c.shoes.map(([id,cz,sty])=>{ const col=COLORS[COLOR_BY_ZH[cz]];
+      return `<div class="item big shoe ${job.shoes===id?'on':''}" data-shoe="${id}"><img src="${cimg(job.cid,'s_'+id)}" alt=""><span>${ruby(cz,col.py)}</span>${ruby(sty,SHOE_STYLES[sty].py)}</div>`; }).join('')}</div>`; }
+  $('#tray').innerHTML=`${rows}<div class="items" style="margin-top:6px">${tools.map(k=>{const t=TOOLS[k];return `<div class="item ${job.tool===k?'on':''}" data-tool="${k}"><img src="${img(t.img)}" alt="">${ruby(t.zh,t.py)}<span class="en">${t.en}</span></div>`}).join('')}</div>${extra}${nextBtn(done)}`;
+  $$('#tray [data-tool]').forEach(el=>el.onclick=()=>{ job.tool=el.dataset.tool; const t=TOOLS[job.tool]; speaker=null; say([[t.zh,'zh'],[t.en,'en']]); beep('pop'); renderWashTray(which); setHint(toolHint(job.tool)); });
+  $$('#tray [data-shoe]').forEach(el=>el.onclick=()=>{ job.shoes=el.dataset.shoe; job.parts.shoes.st='done'; job.repaired=false; const s=CH[job.cid].shoes.find(x=>x[0]===job.shoes);
+    speaker=null; say([['一双'+s[1]+'的'+s[2],'zh'],[COLORS[COLOR_BY_ZH[s[1]]].en+' '+SHOE_STYLES[s[2]].en,'en']]); sparks($('#fx'),50,90,10); beep('ok'); V.draw(); renderOrderBar(); renderWashTray(which); });
+  bindNext();
+}
+function toolHint(k){ const t=TOOLS[k], p=job.parts[t.part];
+  if(k==='shower'&&!p.foam.some(v=>v>30)) return '先用洗发水搓出泡泡 🫧';
+  if(k==='towel'&&!p.foam.some(v=>v>30)) return '先用洗面奶搓出泡泡 🫧';
+  if(k==='iron'&&!p.foam.some(v=>v>30)) return '先用海绵把脏东西擦出泡泡 🫧';
+  if(k==='dryer'&&p.prog<0.9) return '头发还没冲干净哦';
+  return {foam:'在'+PARTS[t.part].zh+'上搓一搓',rinse:'把泡泡冲掉/擦掉',dry:'把头发吹干',rub:'在鞋子上缝一缝'}[t.act]+' 👆'; }
+function enterShoe(){ renderWashTray('shoe'); setHint('👇 用针线补鞋，或者换新鞋'); speaker=null; say([['修鞋铺！可以补一补，也可以换一双新鞋','zh']]); }
+
+// 指针
+const stage=$('#stage'); let drag=null, lastPt=null, warned=false, lastProg=0;
+function pt(e){ const r=stage.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100,w:r.width,h:r.height}; }
+stage.addEventListener('pointerdown',e=>{ if(!job) return; const p=pt(e), s=curStation();
+  if(s==='wash'||s==='shoe'||s==='makeup'){
+    if(!job.tool){ $$('#tray [data-tool],#tray [data-mk]').forEach(x=>{x.classList.remove('wrong');void x.offsetWidth;x.classList.add('wrong')}); speaker=null; say([['先选一个工具','zh']]); return; }
+    stage.setPointerCapture(e.pointerId); lastPt=p; warned=false; const c=$('#cursor'); c.src=img(s==='makeup'?MAKEUP[job.tool].img:TOOLS[job.tool].img); c.style.display='block'; c.style.left=p.x+'%'; c.style.top=p.y+'%';
+    stroke(p,p);
+  } else if(s==='style'){ const el=e.target.closest('.stk');
+    if(el){ const i=+el.dataset.i; job.sel=i; const k=job.stickers[i]; drag={i,dx:p.x-k.x,dy:p.y-k.y}; stage.setPointerCapture(e.pointerId); renderStickers(); renderStyleTray(); }
+    else if(job.sel!==null){ job.sel=null; renderStickers(); renderStyleTray(); } }
+});
+stage.addEventListener('pointermove',e=>{ if(!job) return; const p=pt(e);
+  if(lastPt && !job.tool){ endPtr(); return; }
+  if(lastPt){ const c=$('#cursor'); c.style.left=p.x+'%'; c.style.top=p.y+'%'; stroke(lastPt,p); lastPt=p; }
+  else if(drag){ const k=job.stickers[drag.i]; k.x=Math.max(0,Math.min(100,p.x-drag.dx)); k.y=Math.max(0,Math.min(100,p.y-drag.dy)); placeSticker(drag.i); } });
+function endPtr(){ if(lastPt){ lastPt=null; $('#cursor').style.display='none'; afterStroke(); } drag=null; if(job&&curStation()==='style') renderOrderBar(); }
+stage.addEventListener('pointerup',endPtr); stage.addEventListener('pointercancel',endPtr);
+function stroke(a,b){ const s=curStation(); if(s==='makeup') return paintMakeup(a,b);
+  const seg=Math.hypot((b.x-a.x)*a.w/100,(b.y-a.y)*a.h/100), n=Math.max(1,Math.ceil(seg/6));
+  let changed=false, wrong=null;
+  for(let k=1;k<=n;k++){ const x=a.x+(b.x-a.x)*k/n, y=a.y+(b.y-a.y)*k/n; const r=brushAt(x,y); if(r===true) changed=true; else if(r) wrong=r; }
+  if(changed){ V.draw(); const now=performance.now(); if(now-lastProg>160){ lastProg=now; updateProgress(false); } }
+  else if(wrong && !warned){ warned=true; beep('bad'); const tool=TOOLS[job.tool];
+    const right=PART_TOOLS[wrong].find(t=>t!==job.tool)||PART_TOOLS[wrong][0];
+    setHint(`这里是${ruby(PARTS[wrong].zh,PARTS[wrong].py)}，要用 ${ruby(TOOLS[right].zh,TOOLS[right].py)}`); speaker=null; say([['这里是'+PARTS[wrong].zh+'，要用'+TOOLS[right].zh,'zh']]); }
+}
+// 在低分辨率遮罩上刷一笔；返回 true=有效、'部位名'=刷到了别的部位、false=什么也没刷到
+function brushAt(x,y){ const t=TOOLS[job.tool]; if(!t) return false; const P=job.parts[t.part]; if(!P||P.st!=='todo') return false;
+  const cx=x/100*LW, cy=y/100*LH, R=LW*0.075; let hit=false;
+  const x0=Math.max(0,Math.floor(cx-R)), x1=Math.min(LW-1,Math.ceil(cx+R)), y0=Math.max(0,Math.floor(cy-R)), y1=Math.min(LH-1,Math.ceil(cy+R));
+  for(let yy=y0;yy<=y1;yy++) for(let xx=x0;xx<=x1;xx++){ const d=Math.hypot(xx-cx,yy-cy); if(d>R) continue; const i=yy*LW+xx; if(P.mask[i]<=40) continue; hit=true;
+    const f=1-d/R*0.5;
+    if(t.act==='foam') P.foam[i]=Math.min(255,P.foam[i]+110*f);
+    else if(t.act==='rinse'){ if(P.foam[i]>30){ P.rev[i]=255; P.foam[i]=0; } }
+    else if(t.act==='rub') P.rev[i]=Math.min(255,P.rev[i]+120*f);
+    else if(t.act==='dry'){ if(P.prog>=0.9) P.dry=Math.min(1,P.dry+0.0009*f); } }
+  if(!hit){ // 刷到了别的部位？
+    const i=Math.min(LH-1,Math.max(0,Math.round(cy)))*LW+Math.min(LW-1,Math.max(0,Math.round(cx)));
+    for(const p of ['face','hair','shoes','clothes']) if(p!==t.part && job.parts[p].st==='todo' && job.parts[p].mask[i]>40) return p;
+    return false; }
+  if(t.act!=='dry'){ pushArr(P.revC,P.rev); pushArr(P.foamC,P.foam); }
+  return true; }
+function updateProgress(final){ for(const p of Object.keys(PARTS)){ const P=job.parts[p]; if(P.st!=='todo') continue;
+    let n=0; for(let i=0;i<P.mask.length;i++) if(P.mask[i]>40&&P.rev[i]>128) n++; P.prog=n/P.total;
+    const need=p==='hair'?P.prog>=0.9&&P.dry>=0.6:P.prog>=0.9;
+    if(p==='hair'&&P.prog>=0.9&&!P.rinsed){ P.rinsed=true; P.rev.fill(255); pushArr(P.revC,P.rev); P.foam.fill(0); pushArr(P.foamC,P.foam); speaker=null; say([['冲干净啦！再用吹风机吹干','zh']]); job.tool=null; setHint('💨 用吹风机把头发吹干'); }
+    if(need){ P.st='done'; P.rev.fill(255); P.foam.fill(0); if(p==='shoes') job.repaired=true; beep('win'); sparks($('#fx'),50,p==='hair'?15:p==='face'?38:p==='shoes'?92:65,14);
+      speaker=null; say([[PARTS[p].zh+'干干净净啦！','zh'],[`Clean ${PARTS[p].en}!`,'en']]); } }
+  if(Object.keys(PARTS).every(p=>job.parts[p].st!=='todo')) job.allClean=true;
+  V.draw(); renderOrderBar(); renderWashTray(curStation()==='shoe'?'shoe':'wash'); }
+function afterStroke(){ if(curStation()==='makeup'){ renderOrderBar(); renderMakeupTray(); return; } updateProgress(true); }
+
+// ====================== 化妆台 ======================
+function zones(){ const a=CH[job.cid].anchors||{box:[30,24,40,22],eyes:[[42,34],[58,34]],nose:[50,38],mouth:[50,41],cheeks:[[37,39],[63,39]]}; const bw=a.box[2], bh=a.box[3];
+  return { lipstick:[{x:a.mouth[0],y:a.mouth[1],rx:bw*.10,ry:bh*.05}],
+    blush:a.cheeks.map(c=>({x:c[0],y:c[1],rx:bw*.10,ry:bh*.07})),
+    eyeshadow:a.eyes.map(e=>({x:e[0],y:e[1]-bh*.09,rx:bw*.12,ry:bh*.05})),
+    nose:[{x:a.nose[0],y:a.nose[1],rx:bw*.05,ry:bh*.04}] }; }
+function ensureMk(){ if(job.mk) return; const c=document.createElement('canvas'); c.width=360; c.height=463; job.mk={c,amt:{}}; }
+function enterMakeup(){ ensureMk(); job.tool=null; job.mkCol=null; renderMakeupTray(); setHint('👇 选口红、腮红、眼影，在脸上涂一涂'); speaker=null; say([['化妆台！想涂什么颜色都可以','zh']]); }
+function mkCols(k){ return MAKEUP[k].cols.filter(c=>S.col.includes(c)||['red','pink','black'].includes(c)); }
+function renderMakeupTray(){
+  const m=job.tool?MAKEUP[job.tool]:null;
+  const cols=m?mkCols(job.tool):[];
+  if(m&&m.cols.length&&!cols.includes(job.mkCol)) job.mkCol=cols[0];
+  $('#tray').innerHTML=`<div class="items">${Object.entries(MAKEUP).map(([k,t])=>`<div class="item ${job.tool===k?'on':''}" data-mk="${k}"><img src="${img(t.img)}" alt="">${ruby(t.zh,t.py)}<span class="en">${t.en}</span></div>`).join('')}</div>
+    ${cols.length?`<div class="swatches" style="margin:6px 4px">${cols.map(c=>`<button class="sw ${job.mkCol===c?'on':''}" data-c="${c}" style="background:${COLORS[c].hex}" title="${COLORS[c].zh}"></button>`).join('')}</div>`:''}
+    <div class="small">涂出界也不怕，会自动涂在该涂的地方；用 ${ruby('卸妆棉','xiè zhuāng mián')} 可以擦掉重来</div>${nextBtn(true)}`;
+  $$('#tray [data-mk]').forEach(el=>el.onclick=()=>{ job.tool=el.dataset.mk; const t=MAKEUP[job.tool]; speaker=null; say([[t.zh,'zh'],[t.en,'en']]); beep('pop'); renderMakeupTray();
+    setHint(job.tool==='cotton'?'在脸上擦一擦，卸掉妆':'在'+({lipstick:'嘴巴',blush:'脸蛋',eyeshadow:'眼睛上面',nose:'鼻子'}[job.tool])+'上涂一涂 👆'); });
+  $$('#tray [data-c]').forEach(el=>el.onclick=()=>{ job.mkCol=el.dataset.c; const c=COLORS[job.mkCol]; speaker=null; say([[c.zh,'zh'],[c.en,'en']]); renderMakeupTray(); });
+  bindNext();
+}
+function paintMakeup(a,b){ ensureMk(); const g=job.mk.c.getContext('2d'), W=job.mk.c.width, H=job.mk.c.height, Z=zones();
+  const seg=Math.hypot((b.x-a.x)*a.w/100,(b.y-a.y)*a.h/100), n=Math.max(1,Math.ceil(seg/4));
+  const tools=job.tool==='cotton'?['lipstick','blush','eyeshadow','nose']:[job.tool]; let hit=false;
+  for(const tk of tools) for(const z of Z[tk]){
+    g.save(); g.beginPath(); g.ellipse(z.x/100*W,z.y/100*H,z.rx/100*W,z.ry/100*H,0,0,7); g.clip();
+    for(let k=1;k<=n;k++){ const x=(a.x+(b.x-a.x)*k/n)/100*W, y=(a.y+(b.y-a.y)*k/n)/100*H;
+      const dx=x-z.x/100*W, dy=y-z.y/100*H; if(Math.hypot(dx/(z.rx/100*W+18),dy/(z.ry/100*H+18))>1.4) continue; hit=true;
+      if(job.tool==='cotton'){ g.globalCompositeOperation='destination-out'; g.beginPath(); g.arc(x,y,16,0,7); g.fillStyle='rgba(0,0,0,.35)'; g.fill(); }
+      else { const col=COLORS[job.mkCol].hex, r=tk==='lipstick'?9:tk==='nose'?8:14; const gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,col+'55'); gr.addColorStop(1,col+'00');
+        g.globalCompositeOperation='source-over'; g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+        const key=tk+'|'+job.mkCol; job.mk.amt[key]=Math.min(1,(job.mk.amt[key]||0)+0.02); } }
+    g.restore(); }
+  if(job.tool==='cotton'&&hit) for(const k in job.mk.amt) job.mk.amt[k]=Math.max(0,job.mk.amt[k]-0.02);
+  if(hit) V.draw(); }
+
+// ====================== 造型台：换装 + 贴纸 ======================
+let styleTab='outfit';
+function enterStyle(){ styleTab='outfit'; renderStickers(); renderStyleTray(); setHint('👇 选衣服，再贴贴纸'); speaker=null; say([['造型台！选一件衣服，再贴上贴纸吧','zh']]); }
+function stickerSrc(k){ return k.startsWith('k_')?`img2/${k}.webp`:img('s_'+k); }
+function placeSticker(i){ const s=job.stickers[i], el=$(`#stkLayer .stk[data-i="${i}"]`); if(!el) return;
+  el.style.left=s.x+'%'; el.style.top=s.y+'%'; el.style.width=s.s+'%'; el.style.transform=`translate(-50%,-50%) rotate(${s.r||0}deg)`; }
+function renderStickers(hide){ $('#stkLayer').innerHTML=hide?'':job.stickers.map((s,i)=>`<div class="stk ${job.sel===i?'sel':''}" data-i="${i}"><img src="${stickerSrc(s.k)}" style="filter:${s.col?COLORS[s.col].f:''}" alt=""></div>`).join('');
+  if(!hide) job.stickers.forEach((_,i)=>placeSticker(i)); }
+function addSticker(k){ const a=CH[job.cid].anchors, isAcc=!k.startsWith('k_'), st=isAcc?STICKERS[k]:null;
+  const top=a?a.box[1]:24;
+  const y= k==='necklace'?(a?a.mouth[1]+8:50): k==='glasses'?(a?a.eyes[0][1]:34): k==='heart'?(a?a.cheeks[0][1]:40): ['crown','hat'].includes(k)?top-(a?a.box[3]*1.25:10): isAcc? top-(a?a.box[3]*0.8:6)+Math.random()*6 : 55+Math.random()*25;
+  const x= k==='heart'?(a?a.cheeks[0][0]:38): ['necklace','glasses','crown','hat'].includes(k)?50: isAcc? 30+Math.random()*40 : 15+Math.random()*70;
+  job.stickers.push({k,col:st&&st.color?(S.col.includes('red')?'red':S.col[0]):null,x,y,s:st?st.size:16,r:0});
+  if(job.stickers.length>14) job.stickers.shift(); job.sel=job.stickers.length-1; renderStickers(); renderStyleTray(); renderOrderBar(); beep('pop');
+  const w=st||BAG[k.slice(2)]; speaker=null; say([[w.zh,'zh'],[w.en,'en']]); }
+function renderStyleTray(){
+  const sel=job.sel!==null?job.stickers[job.sel]:null; let body='';
+  if(styleTab==='outfit') body=`<div class="items">${CH[job.cid].outfits.map(([id,cz,sty])=>{ const c=COLORS[COLOR_BY_ZH[cz]];
+      return `<div class="item big ${job.outfit===id?'on':''}" data-o="${id}"><img src="${cimg(job.cid,'o_'+id)}" alt=""><span>${ruby(cz,c.py)}</span>${ruby(sty,STYLES[sty].py)}</div>`; }).join('')}</div>`;
+  else if(styleTab==='acc') body=`<div class="items">${S.stk.map(k=>{const st=STICKERS[k];return `<div class="item" data-k="${k}"><img src="${img('s_'+k)}" alt="">${ruby(st.zh,st.py)}<span class="en">${st.en}</span></div>`}).join('')}</div>`;
+  else { const mine=Object.keys(S.bag).filter(k=>S.bag[k]>0);
+    body=mine.length?`<div class="items">${mine.map(k=>{const b=BAG[k];return `<div class="item" data-k="k_${k}"><img src="img2/k_${k}.webp" alt="">${ruby(b.zh,b.py)}<span class="en">${b.en}</span></div>`}).join('')}</div>`
+      :`<p class="small">还没有盲袋贴纸，回店里点 🎁 盲袋 开一包吧！</p>`; }
+  let selbar=''; if(sel){ const st=STICKERS[sel.k];
+    selbar=`<div class="selbar">${st&&st.color?`<div class="swatches">${S.col.map(c=>`<button class="sw ${sel.col===c?'on':''}" data-c="${c}" style="background:${COLORS[c].hex}"></button>`).join('')}</div>`:''}
+      <button data-act="big">➕</button><button data-act="small">➖</button><button data-act="rot">🔄</button><button data-act="del">🗑️</button></div>`; }
+  $('#tray').innerHTML=`${selbar}<div class="tabs"><button data-tab="outfit" class="${styleTab==='outfit'?'on':''}">👗 ${ruby('衣服','yī fu')}</button><button data-tab="acc" class="${styleTab==='acc'?'on':''}">🎀 ${ruby('饰品','shì pǐn')}</button><button data-tab="bag" class="${styleTab==='bag'?'on':''}">🎁 ${ruby('贴纸','tiē zhǐ')}</button></div>${body}${nextBtn(true)}`;
+  $$('#tray [data-tab]').forEach(b=>b.onclick=()=>{ styleTab=b.dataset.tab; renderStyleTray(); });
+  $$('#tray [data-o]').forEach(b=>b.onclick=()=>{ const o=CH[job.cid].outfits.find(x=>x[0]===b.dataset.o); job.outfit=o[0]; sparks($('#fx'),50,55,10);
+    const c=COLORS[COLOR_BY_ZH[o[1]]]; speaker=null; say([[o[1]+'的'+o[2],'zh'],[c.en+' '+STYLES[o[2]].en,'en']]); V.draw(); renderOrderBar(); styleTab='acc'; renderStyleTray(); });
+  $$('#tray [data-k]').forEach(b=>b.onclick=()=>addSticker(b.dataset.k));
+  $$('#tray [data-c]').forEach(b=>b.onclick=()=>{ sel.col=b.dataset.c; renderStickers(); renderStyleTray(); renderOrderBar(); const c=COLORS[sel.col]; speaker=null; say([[c.zh,'zh'],[c.en,'en']]); });
+  $$('#tray [data-act]').forEach(b=>b.onclick=()=>{ const a=b.dataset.act;
+    if(a==='big') sel.s=Math.min(70,sel.s*1.15); if(a==='small') sel.s=Math.max(6,sel.s/1.15); if(a==='rot') sel.r=((sel.r||0)+20)%360;
+    if(a==='del'){ job.stickers.splice(job.sel,1); job.sel=null; renderStickers(); renderStyleTray(); renderOrderBar(); return; } placeSticker(job.sel); });
+  bindNext(); }
+
+// ====================== 拍照 ======================
+function enterPhoto(){ job.sel=null; renderStickers(); setBg(job.bg); renderPhotoTray(); setHint('选一个背景，按 📸 拍照'); speaker=null; say([['拍张漂亮的照片吧！','zh']]); }
+function setBg(k){ job.bg=k; $('#stage').style.backgroundImage=`url(${PHOTO_BG[k].src})`; }
+function renderPhotoTray(){
+  $('#tray').innerHTML=`<div class="items">${Object.entries(PHOTO_BG).map(([k,b])=>`<div class="item big ${job.bg===k?'on':''}" data-bg="${k}"><img src="${b.src}" style="object-position:50% 50%" alt="">${ruby(b.zh,b.py)}</div>`).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn yellow" id="snapBtn">📸 咔嚓！</button></div>${nextBtn(!!job.snapped)}`;
+  $$('#tray [data-bg]').forEach(b=>b.onclick=()=>{ setBg(b.dataset.bg); beep('pop'); renderPhotoTray(); });
+  $('#snapBtn').onclick=snap; bindNext(); }
+function lookData(){ // 存进照片墙：化妆层缩成小图
+  const t=document.createElement('canvas'); t.width=180; t.height=231; t.getContext('2d').drawImage(job.mk?job.mk.c:t,0,0,180,231);
+  return {v:2,cid:job.cid,outfit:job.outfit,shoes:job.shoes,bg:job.bg,mk:job.mk?t.toDataURL('image/png'):null,
+    stickers:job.stickers.map(s=>({k:s.k,col:s.col,x:+s.x.toFixed(1),y:+s.y.toFixed(1),s:+s.s.toFixed(1),r:s.r||0})),day:S.day}; }
+function snap(){ const f=document.createElement('div'); f.className='flash'; stage.appendChild(f); setTimeout(()=>f.remove(),600); beep('coin');
+  const met=job.wishes.filter(wishMet).length; job.starsGot= met===job.wishes.length?3:met>=job.wishes.length-1?2:1;
+  const look=lookData(); look.stars=job.starsGot;
+  if(job.snapped) S.album[0]=look; else S.album.unshift(look); S.album=S.album.slice(0,60); save(); job.snapped=true;
+  sparks($('#fx'),50,40,24,'✨⭐💖🌟🎀');
+  const c=CH[job.cid]; const line=job.starsGot===3?['哇！和我想要的一模一样！谢谢你！','Wow! I love it! Thank you!']:job.starsGot===2?['好漂亮！差一点点就完美啦！','So pretty! Thank you!']:['嗯……和我想的不太一样，不过也挺可爱。','Hmm, it is OK.'];
+  setTimeout(()=>{ modal(`<h2>${ruby(c.name,c.py)} 变漂亮啦！</h2><div class="photo" style="width:56%;margin:0 auto" id="revealPhoto"></div>
+    <div class="stars">${'⭐'.repeat(job.starsGot)}${'☆'.repeat(3-job.starsGot)}</div>
+    <p style="font-size:18px;font-weight:800;margin:8px 0 4px">“${line[0]}”</p><p class="en" style="margin:0 0 10px">${line[1]}</p>
+    <div class="row" style="gap:10px"><button class="btn gray" id="reshoot">再拍一张</button><button class="btn yellow" id="toPay">💰 去收钱</button></div>`);
+    renderLook($('#revealPhoto'),look); speaker=job.cid; say([[line[0],'zh','c'],[line[1],'en','c']]);
+    $('#reshoot').onclick=()=>{ closeModal(); renderPhotoTray(); };
+    $('#toPay').onclick=()=>{ closeModal(); nextStation(); }; },700); }
+function renderLook(host,l){
+  if(l.v===2){ const bg=PHOTO_BG[l.bg]||PHOTO_BG.shop; host.style.backgroundImage=`url(${bg.src})`;
+    host.innerHTML=`<img class="l" src="${l.outfit?cimg(l.cid,'o_'+l.outfit):cimg(l.cid,'clean')}" alt="">${l.shoes?`<img class="l" src="${cimg(l.cid,'s_'+l.shoes)}" alt="">`:''}${l.mk?`<img class="l" src="${l.mk}" alt="">`:''}`; }
+  else host.innerHTML=`<img class="l" src="img/${l.cid}_${l.outfit}.webp" alt="">`;   // v1 老照片
+  host.innerHTML+=l.stickers.map(s=>`<div class="stk" style="left:${s.x}%;top:${s.y}%;width:${s.s}%;transform:translate(-50%,-50%) rotate(${s.r||0}deg)"><img src="${s.k.startsWith('k_')?`img2/${s.k}.webp`:img('s_'+s.k)}" style="filter:${s.col?COLORS[s.col].f:''}" alt=""></div>`).join(''); }
+
+// ====================== 收银 ======================
+function mathLevel(){ const acc=S.mathTry?S.mathOk/S.mathTry:1; let L=S.day<=2?1:S.day<=4?2:3; if(acc<0.6&&L>1) L--; return L; }
+function services(){ const L=[]; for(const p of Object.keys(PARTS)) if(job.parts[p].st==='done'&&!(p==='shoes'&&job.shoes)) L.push({zh:PARTS[p].svc,ico:{hair:'🧴',face:'🧼',clothes:'👕',shoes:'🪡'}[p]});
+  if(job.shoes) L.push({zh:'新鞋',ico:'👟'}); if(job.mk&&Object.values(job.mk.amt).some(v=>v>0.1)) L.push({zh:'化妆',ico:'💄'});
+  if(job.outfit) L.push({zh:'换装',ico:'👗'}); if(job.stickers.length) L.push({zh:'贴纸',ico:'🎀'}); return L.length?L:[{zh:'洗护',ico:'🧴'}]; }
+function makeBill(){ const L=mathLevel(); let items=shuffle(services()); let prices;
+  if(L===1){ items=items.slice(0,2); while(items.length<2) items.push(items[0]); const a=rnd(1,5), b=rnd(1,Math.min(5,10-a)); prices=[a,b]; }
+  else { items=items.slice(0,3); while(items.length<2) items.push(items[0]); let t; do{ prices=items.map(()=>rnd(2,9)); t=prices.reduce((x,y)=>x+y,0); }while(t>20||t<11); }
+  const total=prices.reduce((x,y)=>x+y,0); let paid=null, ans=total;
+  if(L===3){ paid=total<10?10:20; if(total===paid) prices[0]--; const t2=prices.reduce((x,y)=>x+y,0); ans=paid-t2; return {L,items:items.map((it,i)=>({...it,price:prices[i]})),total:t2,paid,ans}; }
+  return {L,items:items.map((it,i)=>({...it,price:prices[i]})),total,paid,ans}; }
+function coinsHtml(n){ return `<span class="coins">${Array.from({length:n},()=>`<img src="img/d_coin.webp" alt="">`).join('')}</span>`; }
+function tenFrames(a,b,sub){ let h=''; const tot=sub?a:a+b; const frames=Math.ceil(tot/10)||1;
+  for(let f=0;f<frames;f++){ h+='<span class="tenframe">'; for(let i=0;i<10;i++){ const k=f*10+i; let c='';
+    if(sub){ if(k<a) c=k>=a-b?'x':'a'; } else { if(k<a) c='a'; else if(k<a+b) c='b'; } h+=`<i class="${c}"></i>`; } h+='</span>'; } return h; }
+function askMath({title,rows,question,expr,ans,sayText,help,onDone}){
+  const opts=new Set([ans]); for(let d=1;opts.size<4;d++){ for(const v of shuffle([ans-d,ans+d])) if(v>=0&&opts.size<4) opts.add(v); }
+  modal(`<h2>${title}</h2>${rows||''}<p style="font-size:19px;font-weight:800">${question}</p><p style="font-size:26px;font-weight:900;margin:4px">${expr} = ?</p>
+    <div id="helpBox" style="display:none;margin:4px 0"></div><div class="opts">${shuffle([...opts]).map(v=>`<button data-v="${v}">${v}</button>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button class="btn gray" id="helpBtn" style="font-size:16px">💡 帮帮我</button></div>`);
+  speaker=null; say([[sayText,'zh']]); let tries=0;
+  const showHelp=()=>{ const hb=$('#helpBox'); hb.style.display='block'; hb.innerHTML=help(); };
+  $('#helpBtn').onclick=showHelp;
+  $$('#panel [data-v]').forEach(b=>b.onclick=()=>{ const v=+b.dataset.v; tries++;
+    if(v===ans){ b.classList.add('yes'); beep('coin'); S.mathTry++; if(tries===1) S.mathOk++; say([['答对啦！','zh'],['Great!','en']]); setTimeout(()=>onDone(tries===1),800); }
+    else { b.classList.add('no'); b.disabled=true; beep('bad'); say([['再想想','zh']]); if(tries>=2) showHelp(); } }); }
+function enterPay(){ setHint(''); $('#tray').innerHTML='<p class="small" style="text-align:center">收银中……</p>'; const bill=makeBill(); job.bill=bill;
+  const rows=`<div class="bill">${bill.items.map(it=>`<div><span>${it.ico} ${it.zh}</span>${bill.L===1?coinsHtml(it.price):''}<b>${it.price} 元</b></div>`).join('')}</div>`;
+  const expr=bill.L===3?`${bill.paid} − ${bill.total}`:bill.items.map(i=>i.price).join(' + ');
+  askMath({title:'💰 收银台',rows,question:bill.L===3?`一共 <b>${bill.total}</b> 元，顾客给了 <b style="color:var(--pink)">${bill.paid}</b> 元。要${ruby('找','zhǎo')}回多少元？`:`一${ruby('共','gòng')}多少元？`,
+    expr,ans:bill.ans,sayText:bill.L===3?`一共${bill.total}元，顾客给了${bill.paid}元，要找回多少元？`:`${bill.items.map(i=>i.price).join('加')}，一共多少元？`,
+    help:()=> bill.L===3?tenFrames(bill.paid,bill.total,true)+'<div class="small">划掉已经花的钱，数一数剩下的</div>'
+      : bill.items.length===2?tenFrames(bill.items[0].price,bill.items[1].price)+'<div class="small">粉点加蓝点，数一数一共几个</div>'
+      : (()=>{const [a,b,c]=bill.items.map(i=>i.price); return tenFrames(a+b,c)+`<div class="small">先算 ${a}+${b}=${a+b}，再加 ${c}（凑十法）</div>`;})(),
+    onDone:payDone}); }
+function payDone(first){ const earn=job.bill.total, tip=first?job.starsGot+S.dec.length:0;
+  S.coins+=earn+tip; S.stars+=job.starsGot; S.served++; S.servedToday++; save();
+  modal(`<h2>🎉 收到啦！</h2><div style="font-size:24px;font-weight:900;margin:8px 0">🪙 +${earn}${tip?`　小费 +${tip}`:''}</div><div class="stars">${'⭐'.repeat(job.starsGot)}</div>
+    ${tip?`<div class="small">第一次就答对有小费！店里装饰越多，小费越多</div>`:''}<button class="btn" id="nextCBtn" style="margin-top:14px">${S.servedToday>=PER_DAY?'🌙 今天打烊':'下一位顾客 ▶'}</button>`);
+  sparks($('#panel'),50,30,14,'🪙✨');
+  $('#nextCBtn').onclick=()=>{ closeModal(); job=null; nextCust=null; if(S.servedToday>=PER_DAY) endDay(); else goShop(); }; }
+function endDay(){ const newDay=S.day+1, nc=Object.entries(CH).find(([k,c])=>c.unlock===newDay), bonus=5+level()*2;
+  modal(`<h2>🌙 第 ${S.day} 天打烊啦</h2><p style="font-size:18px;font-weight:800">今天接待了 ${PER_DAY} 位顾客<br>人气 ${'💗'.repeat(level())}</p>
+    <p style="font-size:18px;font-weight:800">打烊奖励 🪙 +${bonus}</p>${nc?`<p style="font-size:18px;font-weight:800">明天会有新顾客 <b>${ruby(nc[1].name,nc[1].py)}</b> 来哦！</p>`:''}
+    <p class="small">可以去 🎁 开盲袋，或者去 🏪 贴纸小铺卖贴纸赚钱！</p><button class="btn" id="dayBtn">☀️ 新的一天</button>`);
+  speaker=null; say([['今天辛苦啦！','zh']]);
+  $('#dayBtn').onclick=()=>{ S.coins+=bonus; S.day=newDay; S.servedToday=0; save(); closeModal(); nextCust=null; goShop(); }; }
+
+// ====================== 盲袋 + 图鉴 ======================
+const BAG_PRICE=8; let bagTab='open';
+function drawBag(){ const r=Math.random(); const rar=r<0.04?3:r<0.25?2:1; return pick(Object.keys(BAG).filter(k=>BAG[k].r===rar)); }
+function renderBag(){ $$('.coinN2').forEach(e=>e.textContent=S.coins); $$('#bagTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===bagTab));
+  if(bagTab==='open'){ $('#bagList').innerHTML=`<div class="bagbox"><img class="bagimg" id="bagImg" src="img2/d_blindbag.webp" alt="">
+      <div style="font-size:20px;font-weight:900">一包 🪙 ${BAG_PRICE} 元 · 开出 3 张随机贴纸</div><div class="small">普通 / <span style="color:#5aa9ff">稀有</span> / <span style="color:#ff5fa2">闪亮</span>，重复的可以拿去贴纸小铺卖</div>
+      <button class="btn" id="buyBag">🎁 买一包</button><div class="reveal" id="reveal"></div></div>`;
+    $('#buyBag').onclick=buyBag; }
+  else { const keys=Object.keys(BAG), have=keys.filter(k=>S.bag[k]>0).length;
+    $('#bagList').innerHTML=`<p style="text-align:center;font-weight:900">收集 ${have} / ${keys.length}</p><div class="grid">${keys.map(k=>{const b=BAG[k], n=S.bag[k]||0;
+      return `<div class="card ${n?'':'miss'} ${n&&b.r===3?'shiny':''}" data-k="${k}"><span class="rar r${b.r}">${RAR[b.r].zh}</span><img src="img2/k_${k}.webp" alt="">${n?ruby(b.zh,b.py):'？？'}<span class="en">${n?b.en:''}</span>${n>1?`<span class="small">×${n}</span>`:''}</div>`;}).join('')}</div>`;
+    $$('#bagList .card').forEach(el=>el.onclick=()=>{ const b=BAG[el.dataset.k]; if(S.bag[el.dataset.k]) wordSay(b); }); } }
+function buyBag(){ if(S.coins<BAG_PRICE){ beep('bad'); toast(`还差 ${BAG_PRICE-S.coins} 元 🪙`); say([[`你有${S.coins}元，还差${BAG_PRICE-S.coins}元`,'zh']]); return; }
+  askMath({title:'🎁 买盲袋',question:`你有 ${S.coins} 元，一包 ${BAG_PRICE} 元，买完还剩多少元？`,expr:`${S.coins} − ${BAG_PRICE}`,ans:S.coins-BAG_PRICE,
+    sayText:`你有${S.coins}元，花${BAG_PRICE}元，还剩多少元？`,help:()=>S.coins<=20?tenFrames(S.coins,BAG_PRICE,true):`<div class="small">${S.coins} 先减 ${S.coins%10||10}，再减剩下的</div>`,
+    onDone:()=>{ closeModal(); S.coins-=BAG_PRICE; S.bagOpened++; save(); openBag(); }}); }
+function openBag(){ renderBag(); const im=$('#bagImg'); im.classList.add('shake'); beep('tear');
+  setTimeout(()=>{ const got=[drawBag(),drawBag(),drawBag()]; got.forEach(k=>S.bag[k]=(S.bag[k]||0)+1); save(); if(!$('#reveal')) return;
+    $('#reveal').innerHTML=got.map((k,i)=>{const b=BAG[k];return `<div class="card ${b.r===3?'shiny':''}" style="animation-delay:${i*.25}s"><span class="rar r${b.r}">${RAR[b.r].zh}</span><img src="img2/k_${k}.webp" alt="">${ruby(b.zh,b.py)}<span class="en">${b.en}</span>${S.bag[k]===1?'<span class="small" style="color:var(--pink)">NEW!</span>':''}</div>`}).join('');
+    $$('.coinN2').forEach(e=>e.textContent=S.coins); im.classList.remove('shake'); sparks($('#reveal'),50,30,18,'✨⭐🎉');
+    const best=got.map(k=>BAG[k]).sort((a,b)=>b.r-a.r)[0]; beep(best.r===3?'win':'ok');
+    say(got.flatMap(k=>[[BAG[k].zh,'zh'],[BAG[k].en,'en']])); },1300); }
+
+// ====================== 贴纸小铺：卖重复贴纸，算钱 ======================
+let stallJob=null;
+function stock(){ return Object.keys(S.bag).filter(k=>S.bag[k]>=2); }
+function openStall(){ show('stall'); $$('.coinN2').forEach(e=>e.textContent=S.coins); stallJob={served:0}; nextBuyer(); }
+function nextBuyer(){ const st=stock();
+  if(!st.length){ $('#buyerImg').src=cimg(pick(Object.keys(CH)),'clean'); $('#buyerSay').innerHTML='小铺里还没有可以卖的贴纸哦。<br><span class="small">同一种贴纸有 2 张以上，多出来的才能卖。先去开盲袋吧！</span>';
+    $('#stallSide').innerHTML=`<div class="row" style="margin:16px"><button class="btn" data-home2>🏠 回店里</button><button class="btn aqua" id="goBag">🎁 去开盲袋</button></div>`;
+    $('[data-home2]').onclick=goShop; $('#goBag').onclick=()=>{ show('bag'); bagTab='open'; renderBag(); }; return; }
+  const cid=pick(Object.keys(CH)); const k=pick(st); const max=Math.min(3,S.bag[k]-1); const n=rnd(1,max);
+  stallJob.cur={cid,k,n,got:0}; speaker=cid; const b=BAG[k], english=S.day>=3&&Math.random()<0.4;
+  const numZh=['','一','两','三'][n], numEn=['','one','two','three'][n];
+  $('#buyerImg').src=cimg(cid,'clean');
+  $('#buyerSay').innerHTML= english ? `<span class="en" style="font-size:20px">Can I have ${numEn} ${b.en}${n>1&&!b.en.endsWith('s')?'s':''}, please?</span><img src="img2/k_${k}.webp" style="width:44px;vertical-align:middle" alt="">`
+    : `${ruby('我','wǒ')}${ruby('想','xiǎng')}${ruby('买','mǎi')} <b style="font-size:26px">${n}</b> ${ruby('张','zhāng')}${kw(b.zh,b.py,{icon:`img2/k_${k}.webp`})}<br><span class="en">${numEn} ${b.en}, please!</span>`;
+  bindKw($('#buyerSay'));
+  say(english?[[`Can I have ${numEn} ${b.en}, please?`,'en','c']]:[[`我想买${numZh}张${b.zh}贴纸`,'zh','c']]);
+  renderStallSide(); }
+function renderStallSide(){ const c=stallJob.cur;
+  $('#stallSide').innerHTML=`<div class="small" style="margin:8px 10px 0">把顾客要的贴纸拿给他(点贴纸放进篮子)：</div><div class="basket" id="basket">${Array.from({length:c.got},()=>`<img src="img2/k_${c.k}.webp" alt="">`).join('')}</div>
+    <div class="grid">${stock().map(k=>{const b=BAG[k];return `<div class="card" data-k="${k}"><span class="rar r${b.r}">${RAR[b.r].p} 元</span><img src="img2/k_${k}.webp" alt="">${ruby(b.zh,b.py)}<span class="en">${b.en}</span><span class="small">可卖 ${S.bag[k]-1}</span></div>`}).join('')}</div>`;
+  $$('#stallSide .card').forEach(el=>el.onclick=()=>{ const k=el.dataset.k;
+    if(k!==c.k){ beep('bad'); el.classList.remove('wrong'); void el.offsetWidth; el.style.animation='shake .4s'; speaker=null; say([['不是这个哦','zh'],[BAG[c.k].en,'en']]); return; }
+    c.got++; beep('pop'); renderStallSide(); if(c.got>=c.n) setTimeout(stallPay,400); }); }
+function stallPay(){ const c=stallJob.cur, p=RAR[BAG[c.k].r].p, total=p*c.n, L=mathLevel();
+  const paid= L>=2 && total<20 ? (total<10?10:20) : null;
+  const expr= paid? `${paid} − ${total}` : Array(c.n).fill(p).join(' + ');
+  askMath({title:'🏪 算一算',rows:`<div class="bill"><div><span><img src="img2/k_${c.k}.webp" alt=""> ${BAG[c.k].zh} × ${c.n}</span><b>每张 ${p} 元</b></div></div>`,
+    question: paid? `一共 ${total} 元，顾客给了 ${paid} 元，要找回多少元？` : `${c.n} 张一共多少元？`, expr, ans: paid? paid-total : total,
+    sayText: paid? `一共${total}元，顾客给了${paid}元，要找回多少元？` : `每张${p}元，${c.n}张一共多少元？`,
+    help:()=> paid? tenFrames(paid,total,true) : tenFrames(p*Math.min(c.n,2)-(c.n>1?p:0)||p, c.n>1?p*(c.n-1):0),
+    onDone:(first)=>{ S.bag[c.k]-=c.n; S.coins+=total+(first?1:0); save(); stallJob.served++; closeModal(); $$('.coinN2').forEach(e=>e.textContent=S.coins);
+      toast(`🪙 +${total}${first?' +1':''}`); beep('coin'); speaker=c.cid; say([['谢谢！','zh','c'],['Thank you!','en','c']]); setTimeout(nextBuyer,1200); }}); }
+
+// ====================== 商店 / 照片墙 / 学习卡 ======================
+let storeTab='stk';
+function renderStore(){ $$('.coinN2').forEach(e=>e.textContent=S.coins); $$('#storeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===storeTab));
+  let cards=[];
+  if(storeTab==='stk') cards=Object.entries(STICKERS).filter(([k,s])=>s.price>0).map(([k,s])=>({k,owned:S.stk.includes(k),price:s.price,vis:`<img src="${img('s_'+k)}" alt="">`,w:s}));
+  if(storeTab==='col') cards=Object.entries(COLORS).map(([k,c])=>({k,owned:S.col.includes(k),price:5,vis:`<div style="width:54px;height:54px;border-radius:50%;background:${c.hex};border:4px solid #fff;box-shadow:0 0 0 2px #eee;margin:3px"></div>`,w:c}));
+  if(storeTab==='dec') cards=Object.entries(DECOR).map(([k,d])=>({k,owned:S.dec.includes(k),price:d.price,vis:`<img src="${img('d_'+k)}" alt="">`,w:d}));
+  $('#storeGrid').innerHTML=cards.map(c=>`<div class="card ${c.owned?'owned':''}" data-k="${c.k}">${c.vis}${ruby(c.w.zh,c.w.py)}<span class="en">${c.w.en}</span>${c.owned?'<span>✅ 已拥有</span>':`<span class="price"><img src="img/d_coin.webp" alt="">${c.price}</span>`}</div>`).join('');
+  $$('#storeGrid .card').forEach(el=>el.onclick=()=>{ const c=cards.find(x=>x.k===el.dataset.k); wordSay(c.w); if(c.owned) return;
+    if(S.coins<c.price){ beep('bad'); toast(`还差 ${c.price-S.coins} 元 🪙`); say([[`你有${S.coins}元，还差${c.price-S.coins}元`,'zh']]); return; }
+    askMath({title:`买 ${ruby(c.w.zh,c.w.py)} 吗？`,rows:`<div style="margin:8px">${c.vis}</div>`,question:`你有 ${S.coins} 元，花 ${c.price} 元，还剩多少元？`,expr:`${S.coins} − ${c.price}`,ans:S.coins-c.price,
+      sayText:`你有${S.coins}元，花${c.price}元，还剩多少元？`,help:()=>S.coins<=20?tenFrames(S.coins,c.price,true):'<div class="small">先减整十，再减个位</div>',
+      onDone:()=>{ S.coins-=c.price; ({stk:S.stk,col:S.col,dec:S.dec})[storeTab].push(c.k); save(); beep('win'); closeModal(); toast(`买到了 ${c.w.zh}！`); renderStore(); }}); }); }
+function renderAlbum(){ $('#albumN').textContent=`${S.album.length} 张`;
+  $('#albumGrid').innerHTML=S.album.length?S.album.map((l,i)=>`<div><div class="photo" data-i="${i}"></div><div class="small" style="text-align:center">${'⭐'.repeat(l.stars||1)} 第${l.day}天</div></div>`).join('')
+    :'<p style="grid-column:1/-1;text-align:center;font-weight:800">还没有照片，快去接待顾客吧！</p>';
+  $$('#albumGrid .photo').forEach(el=>{ const l=S.album[+el.dataset.i]; renderLook(el,l);
+    el.onclick=()=>{ modal(`<div class="photo" style="width:70%;margin:0 auto" id="bigPhoto"></div><button class="btn" id="closeP" style="margin-top:10px">好看！</button>`); renderLook($('#bigPhoto'),l); $('#closeP').onclick=closeModal; }; }); }
+let learnTab='颜色';
+function cardVis(w){ return w.img?`<img src="${img(w.img)}" alt="">`:w.sw?`<div style="width:54px;height:54px;border-radius:50%;background:${w.sw};border:4px solid #fff;box-shadow:0 0 0 2px #eee;margin:3px"></div>`:`<div class="emo">${w.emo}</div>`; }
+function renderLearn(){ const L=LEARN(); $('#learnTabs').innerHTML=Object.keys(L).map(k=>`<button data-t="${k}" class="${k===learnTab?'on':''}">${k}</button>`).join('');
+  $$('#learnTabs button').forEach(b=>b.onclick=()=>{ learnTab=b.dataset.t; renderLearn(); }); const big=learnTab==='识字';
+  $('#learnGrid').innerHTML=L[learnTab].map((w,i)=>`<div class="card" data-i="${i}">${big?`<div class="big">${ruby(w.zh,w.py)}</div>`:cardVis(w)}${big?cardVis(w):ruby(w.zh,w.py)}<span class="en">${w.en}</span></div>`).join('');
+  $$('#learnGrid .card').forEach(el=>el.onclick=()=>wordSay(L[learnTab][+el.dataset.i])); }
+function quiz(){ if(S.quizDay!==S.day){ S.quizDay=S.day; S.quizCoins=0; } const L=LEARN();
+  const all=Object.entries(L).flatMap(([cat,ws])=>ws.map(w=>({...w,cat}))); const qs=shuffle(all).slice(0,5); let qi=0, right=0;
+  const ask=()=>{ if(qi>=qs.length){ const earn=Math.max(0,Math.min(right,10-S.quizCoins)); S.quizCoins+=earn; S.coins+=earn; save();
+      modal(`<h2>测验完成！</h2><div class="stars">${'⭐'.repeat(right)}${'☆'.repeat(5-right)}</div><p style="font-size:20px;font-weight:800">答对 ${right} 题 · 🪙 +${earn}</p><button class="btn" id="qEnd">好的</button>`);
+      $('#qEnd').onclick=()=>{ closeModal(); renderLearn(); }; return; }
+    const q=qs[qi], mode=q.cat==='识字'?'char':pick(['zh','en']);
+    let others=shuffle(all.filter(w=>w.zh!==q.zh&&w.en!==q.en&&w.cat===q.cat)).slice(0,2); if(others.length<2) others=shuffle(all.filter(w=>w.zh!==q.zh)).slice(0,2);
+    const opts=shuffle([q,...others]);
+    const prompt=mode==='char'?`<div style="font-size:60px;font-weight:900">${q.zh}</div><p class="small">这个字是哪个意思？</p>`:mode==='en'?`<p style="font-size:20px;font-weight:800">🔊 听英语，选一选</p><p class="en" style="font-size:28px">${q.en}</p>`
+      :`<p style="font-size:20px;font-weight:800">🔊 听一听，选一选</p><div style="font-size:30px;font-weight:900">${ruby(q.zh,q.py)}</div>`;
+    modal(`<h2>第 ${qi+1} / 5 题</h2>${prompt}<div class="grid" style="padding:4px">${opts.map((w,i)=>`<div class="card" data-i="${i}">${cardVis(w)}</div>`).join('')}</div><div class="row"><button class="btn aqua" id="qSay" style="font-size:16px">🔊 再听</button></div>`);
+    const sayQ=()=>mode==='en'?say([[q.en,'en']]):say([[q.zh,'zh']]); $('#qSay').onclick=sayQ; sayQ(); let first=true;
+    $$('#panel .card').forEach(el=>el.onclick=()=>{ const w=opts[+el.dataset.i];
+      if(w===q){ if(first) right++; beep('ok'); el.style.background='#b8f5cf'; wordSay(q); setTimeout(()=>{qi++;ask();},1300); } else { first=false; beep('bad'); el.style.opacity=.35; } }); };
+  ask(); }
+
+// ====================== 绑定 ======================
+function goFull(){ try{ const d=document.documentElement; if(!document.fullscreenElement&&d.requestFullscreen) d.requestFullscreen().catch(()=>{}); }catch(e){} }
+$('#startBtn').onclick=()=>{ goFull(); speaker=null; say([['欢迎来到贴纸美容小铺！','zh']]); beep('win'); goShop(); };
+$('#muteBtn').onclick=()=>{ S.mute=!S.mute; save(); if(S.mute) stopVoice(); renderShop(); };
+$('#fsBtn').onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else goFull(); }catch(e){} };
+$('#navServe').onclick=startServe; $('#door').onclick=startServe;
+$('#navStore').onclick=()=>{ show('store'); renderStore(); };
+$('#navAlbum').onclick=()=>{ show('album'); renderAlbum(); };
+$('#navLearn').onclick=()=>{ show('learn'); renderLearn(); };
+$('#navBag').onclick=()=>{ show('bag'); bagTab='open'; renderBag(); };
+$('#navStall').onclick=openStall;
+$$('#bagTabs button').forEach(b=>b.onclick=()=>{ bagTab=b.dataset.t; renderBag(); });
+$$('[data-home]').forEach(b=>b.onclick=goShop);
+$$('#storeTabs button').forEach(b=>b.onclick=()=>{ storeTab=b.dataset.t; renderStore(); });
+$('#quizBtn').onclick=quiz;
+$('#backBtn').onclick=()=>{ modal(`<h2>回到店里？</h2><p>这位顾客会离开哦</p><div class="row" style="gap:10px"><button class="btn gray" id="stay">继续改造</button><button class="btn" id="leave">回店里</button></div>`);
+  $('#stay').onclick=closeModal; $('#leave').onclick=()=>{ closeModal(); job=null; goShop(); }; };
+$('#orderBtn').onclick=()=>{ if(job) speakOrder(); };
+document.addEventListener('fullscreenchange',()=>setTimeout(applyScale,100));
+window.addEventListener('resize',applyScale);
+try{ new ResizeObserver(()=>fitStage()).observe($('#tray')); }catch(e){}
+fetch('img2/chars.json').then(r=>r.json()).then(d=>{ CH=d;
+  const hero=['zm','g7','b1'].filter(k=>CH[k]).concat(Object.keys(CH)).slice(0,3);
+  $('#titleHero').innerHTML=hero.map(k=>`<img src="${CH[k].outfits.length?cimg(k,'o_'+CH[k].outfits[0][0]):cimg(k,'clean')}" alt="">`).join('');
+}).catch(()=>{ $('#titleHero').innerHTML='<p class="small">没读到角色表 img2/chars.json（要从桌面图标或 Launchpad 打开）</p>'; });
+applyScale();
+</script>
+</body>
+</html>
