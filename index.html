@@ -755,11 +755,12 @@ function updateProgress(final){ for(const p of Object.keys(PARTS)){ const P=job.
 function afterStroke(){ if(curStation()==='makeup'){ renderOrderBar(); renderMakeupTray(); return; } updateProgress(true); }
 
 // ====================== 化妆台 ======================
-function zones(){ const a=CH[job.cid].anchors||{box:[30,24,40,22],eyes:[[42,34],[58,34]],nose:[50,38],mouth:[50,41],cheeks:[[37,39],[63,39]]}; const bw=a.box[2], bh=a.box[3];
-  return { lipstick:[{x:a.mouth[0],y:a.mouth[1],rx:bw*.10,ry:bh*.05}],
-    blush:a.cheeks.map(c=>({x:c[0],y:c[1],rx:bw*.10,ry:bh*.07})),
-    eyeshadow:a.eyes.map(e=>({x:e[0],y:e[1]-bh*.09,rx:bw*.12,ry:bh*.05})),
-    nose:[{x:a.nose[0],y:a.nose[1],rx:bw*.05,ry:bh*.04}] }; }
+function zones(){ const a=CH[job.cid].anchors||{eyes:[[42,48],[60,48]],nose:[51,51],mouth:[51,53],cheeks:[[37,52.5],[65,52.5]]};
+  const d=a.eyes[1][0]-a.eyes[0][0], k=720/925;   // 涂抹区大小按两眼距离定；k 把横向百分比换成纵向
+  return { lipstick:[{x:a.mouth[0],y:a.mouth[1],rx:d*.2,ry:d*.09*k}],
+    blush:a.cheeks.map(c=>({x:c[0],y:c[1],rx:d*.2,ry:d*.13*k})),
+    eyeshadow:a.eyes.map(e=>({x:e[0],y:e[1]-d*.24*k,rx:d*.28,ry:d*.07*k})),
+    nose:[{x:a.nose[0],y:a.nose[1],rx:d*.07,ry:d*.06*k}] }; }
 function ensureMk(){ if(job.mk) return; const c=document.createElement('canvas'); c.width=360; c.height=463; job.mk={c,amt:{}}; }
 function enterMakeup(){ ensureMk(); job.tool=null; job.mkCol=null; renderMakeupTray(); setHint('👇 选口红、腮红、眼影，在脸上涂一涂'); speaker=null; say([['化妆台！想涂什么颜色都可以','zh']]); }
 function mkCols(k){ return MAKEUP[k].cols.filter(c=>S.col.includes(c)||['red','pink','black'].includes(c)); }
@@ -800,7 +801,7 @@ function renderStickers(hide){ $('#stkLayer').innerHTML=hide?'':job.stickers.map
   if(!hide) job.stickers.forEach((_,i)=>placeSticker(i)); }
 function addSticker(k){ const a=CH[job.cid].anchors, isAcc=!k.startsWith('k_'), st=isAcc?STICKERS[k]:null;
   const top=a?a.box[1]:24;
-  const y= k==='necklace'?(a?a.mouth[1]+8:50): k==='glasses'?(a?a.eyes[0][1]:34): k==='heart'?(a?a.cheeks[0][1]:40): ['crown','hat'].includes(k)?top-(a?a.box[3]*1.25:10): isAcc? top-(a?a.box[3]*0.8:6)+Math.random()*6 : 55+Math.random()*25;
+  const y= k==='necklace'?(a?a.mouth[1]+8:50): k==='glasses'?(a?a.eyes[0][1]:34): k==='heart'?(a?a.cheeks[0][1]:40): ['crown','hat'].includes(k)?top-(a?a.box[3]*1.25:10): isAcc? top-(a?a.box[3]*0.4:6)+Math.random()*6 : 55+Math.random()*25;
   const x= k==='heart'?(a?a.cheeks[0][0]:38): ['necklace','glasses','crown','hat'].includes(k)?50: isAcc? 30+Math.random()*40 : 15+Math.random()*70;
   job.stickers.push({k,col:st&&st.color?(S.col.includes('red')?'red':S.col[0]):null,x,y,s:st?st.size:16,r:0});
   if(job.stickers.length>14) job.stickers.shift(); job.sel=job.stickers.length-1; renderStickers(); renderStyleTray(); renderOrderBar(); beep('pop');
